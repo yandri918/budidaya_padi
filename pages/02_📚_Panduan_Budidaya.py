@@ -81,52 +81,193 @@ with tab2:
     st.subheader("📊 Perbandingan Metode Tanam")
     
     methods_df = pd.DataFrame({
-        'Metode': ['Transplanting', 'Direct Seeding', 'SRI'],
-        'Bibit (kg/ha)': [25, 60, 10],
-        'Tenaga Kerja': ['Tinggi', 'Rendah', 'Sedang'],
-        'Produktivitas': ['Sedang', 'Rendah', 'Tinggi'],
-        'Biaya': ['Tinggi', 'Rendah', 'Sedang']
+        'Metode': ['Transplanting', 'Direct Seeding', 'SRI', 'Jajar Legowo'],
+        'Bibit (kg/ha)': [25, 60, 10, 25],
+        'Tenaga Kerja': ['Tinggi', 'Rendah', 'Sedang', 'Tinggi'],
+        'Produktivitas': ['Sedang', 'Rendah', 'Tinggi', 'Sangat Tinggi'],
+        'Biaya': ['Tinggi', 'Rendah', 'Sedang', 'Tinggi']
     })
     
     st.dataframe(methods_df, use_container_width=True, hide_index=True)
     
-    col_method1, col_method2, col_method3 = st.columns(3)
+    col_method1, col_method2, col_method3, col_method4 = st.columns(4)
     
     with col_method1:
         st.markdown("""
-        **🌱 Transplanting (Pindah Tanam)**
-        - Bibit dari persemaian
-        - Jarak tanam: 25x25 cm
-        - 2-3 bibit per lubang
-        - Umur bibit: 18-25 hari
-        - Kedalaman tanam: 2-3 cm
+        **🌱 Transplanting**
+        - Jarak: 25x25 cm
+        - 2-3 bibit/lubang
+        - Umur: 18-25 hari
         
-        ✅ Paling umum digunakan
+        ✅ Paling umum
         """)
     
     with col_method2:
         st.markdown("""
-        **🌾 Direct Seeding (Tabela)**
-        - Benih langsung ditanam
+        **🌾 Direct Seeding**
+        - Benih langsung
         - Tanpa persemaian
-        - Hemat tenaga kerja
-        - Benih: 60-80 kg/ha
-        - Perlu pengendalian gulma ketat
+        - Hemat tenaga
         
-        ✅ Efisien untuk lahan luas
+        ✅ Lahan luas
         """)
     
     with col_method3:
         st.markdown("""
-        **🌿 SRI (System of Rice Intensification)**
-        - Bibit muda (8-12 hari)
-        - 1 bibit per lubang
-        - Jarak tanam: 30x30 cm
-        - Pengairan berselang
-        - Produktivitas tinggi
+        **🌿 SRI**
+        - Bibit muda 8-12 hari
+        - 1 bibit/lubang
+        - Jarak: 30x30 cm
         
-        ✅ Hemat air & pupuk
+        ✅ Hemat air
         """)
+    
+    with col_method4:
+        st.markdown("""
+        **🌾 Jajar Legowo**
+        - Sistem baris
+        - Populasi tinggi
+        - Produktivitas ++
+        
+        ✅ Hasil maksimal
+        """)
+    
+    st.markdown("---")
+    
+    # Jajar Legowo Calculator
+    st.subheader("🧮 Kalkulator Jajar Legowo")
+    
+    col_jl1, col_jl2 = st.columns(2)
+    
+    with col_jl1:
+        st.markdown("**Pilih Sistem Jajar Legowo:**")
+        jl_system = st.selectbox(
+            "Sistem",
+            ["Legowo 2:1 (25x12.5x50)", "Legowo 3:1 (25x12.5x50)", "Legowo 4:1 (25x12.5x50)", "Legowo 2:1 (20x10x40)"],
+            help="Format: jarak dalam baris x jarak antar rumpun x jarak antar kelompok"
+        )
+        
+        luas_lahan_jl = st.number_input("Luas Lahan (ha)", 0.1, 100.0, 1.0, 0.1, key="jl_luas")
+        bibit_per_lubang = st.number_input("Bibit per Lubang", 1, 5, 2, 1, key="jl_bibit")
+    
+    with col_jl2:
+        st.markdown("**Parameter Hasil:**")
+        panjang_malai = st.number_input("Panjang Malai (cm)", 15.0, 35.0, 25.0, 0.5, help="Rata-rata panjang malai")
+        bulir_per_malai = st.number_input("Bulir per Malai", 80, 200, 120, 5, help="Jumlah bulir per malai")
+        berat_1000_bulir = st.number_input("Berat 1000 Bulir (gram)", 20.0, 35.0, 27.0, 0.5, help="Berat 1000 butir gabah")
+    
+    if st.button("🧮 Hitung Populasi & Potensi Hasil", type="primary", key="calc_jl"):
+        # Parse system
+        if "2:1" in jl_system and "25x12.5" in jl_system:
+            jarak_dalam = 25  # cm
+            jarak_antar = 12.5  # cm
+            jarak_lorong = 50  # cm
+            ratio = 2
+        elif "3:1" in jl_system:
+            jarak_dalam = 25
+            jarak_antar = 12.5
+            jarak_lorong = 50
+            ratio = 3
+        elif "4:1" in jl_system:
+            jarak_dalam = 25
+            jarak_antar = 12.5
+            jarak_lorong = 50
+            ratio = 4
+        else:  # 2:1 (20x10x40)
+            jarak_dalam = 20
+            jarak_antar = 10
+            jarak_lorong = 40
+            ratio = 2
+        
+        # Calculate population
+        # Legowo pattern: ratio rows + 1 lorong
+        lebar_unit = (ratio * jarak_dalam) + jarak_lorong  # cm
+        
+        # Number of units per ha
+        luas_cm2 = 10000 * 10000  # 1 ha in cm2
+        unit_per_ha = (10000 / (lebar_unit / 100)) * (10000 / (jarak_antar / 100))
+        
+        # Rumpun per unit
+        rumpun_per_unit = ratio * 2  # 2 rows per ratio
+        
+        # Total population
+        populasi_per_ha = unit_per_ha * rumpun_per_unit / (ratio + 1)
+        total_populasi = populasi_per_ha * luas_lahan_jl
+        
+        # Yield calculation
+        # Potensi hasil = populasi × anakan produktif × bulir/malai × berat bulir
+        anakan_produktif = bibit_per_lubang * 15  # Estimate 15 productive tillers per seedling
+        total_anakan = total_populasi * anakan_produktif
+        total_bulir = total_anakan * bulir_per_malai
+        total_berat_gram = total_bulir * (berat_1000_bulir / 1000)
+        total_berat_kg = total_berat_gram / 1000
+        total_berat_ton = total_berat_kg / 1000
+        
+        # Per hectare
+        hasil_per_ha = total_berat_ton / luas_lahan_jl
+        
+        st.success("✅ Perhitungan Selesai!")
+        
+        col_res1, col_res2, col_res3 = st.columns(3)
+        
+        with col_res1:
+            st.metric("Populasi Rumpun/ha", f"{populasi_per_ha:,.0f}")
+            st.metric("Total Rumpun", f"{total_populasi:,.0f}")
+        
+        with col_res2:
+            st.metric("Total Anakan Produktif", f"{total_anakan:,.0f}")
+            st.metric("Total Malai", f"{total_anakan:,.0f}")
+        
+        with col_res3:
+            st.metric("Potensi Hasil/ha", f"{hasil_per_ha:.2f} ton")
+            st.metric("Total Hasil", f"{total_berat_ton:.2f} ton")
+        
+        # Detailed breakdown
+        st.markdown("---")
+        st.subheader("📊 Rincian Perhitungan")
+        
+        breakdown = pd.DataFrame({
+            'Parameter': [
+                'Sistem Tanam',
+                'Luas Lahan',
+                'Populasi Rumpun/ha',
+                'Bibit per Lubang',
+                'Anakan Produktif/Rumpun',
+                'Total Anakan Produktif',
+                'Panjang Malai Rata-rata',
+                'Bulir per Malai',
+                'Total Bulir',
+                'Berat 1000 Bulir',
+                'Potensi Hasil per ha',
+                'Total Potensi Hasil'
+            ],
+            'Nilai': [
+                jl_system,
+                f"{luas_lahan_jl} ha",
+                f"{populasi_per_ha:,.0f} rumpun",
+                f"{bibit_per_lubang} bibit",
+                f"{anakan_produktif} anakan",
+                f"{total_anakan:,.0f} anakan",
+                f"{panjang_malai} cm",
+                f"{bulir_per_malai} bulir",
+                f"{total_bulir:,.0f} bulir",
+                f"{berat_1000_bulir} gram",
+                f"{hasil_per_ha:.2f} ton",
+                f"{total_berat_ton:.2f} ton"
+            ]
+        })
+        
+        st.dataframe(breakdown, use_container_width=True, hide_index=True)
+        
+        st.info(f"""
+        💡 **Keunggulan Jajar Legowo {jl_system.split()[1]}:**
+        - Populasi {((populasi_per_ha / 160000) * 100):.0f}% dari sistem konvensional (25x25 cm)
+        - Tanaman pinggir lebih banyak (efek tepi)
+        - Sirkulasi udara lebih baik
+        - Memudahkan pemeliharaan
+        - Potensi hasil +15-20% dari konvensional
+        """)
+
 
 with tab3:
     st.header("🔧 Pemeliharaan Tanaman")

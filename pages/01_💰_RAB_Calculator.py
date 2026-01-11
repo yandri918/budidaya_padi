@@ -35,7 +35,15 @@ with tab1:
         st.subheader("Informasi Lahan")
         luas_lahan = st.number_input("Luas Lahan (ha)", min_value=0.1, max_value=100.0, value=1.0, step=0.1)
         varietas = st.selectbox("Varietas Padi", ["IR64", "Ciherang", "Inpari 32", "Inpari 42", "Mekongga"])
-        metode_tanam = st.selectbox("Metode Tanam", ["Transplanting (Pindah Tanam)", "Direct Seeding (Tabela)", "SRI (System of Rice Intensification)"])
+        metode_tanam = st.selectbox("Metode Tanam", [
+            "Transplanting (Pindah Tanam)", 
+            "Direct Seeding (Tabela)", 
+            "SRI (System of Rice Intensification)",
+            "Jajar Legowo 2:1",
+            "Jajar Legowo 3:1",
+            "Jajar Legowo 4:1"
+        ])
+
     
     with col2:
         st.subheader("Target & Harga")
