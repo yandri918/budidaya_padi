@@ -189,15 +189,22 @@ with tab2:
         # Legowo pattern: ratio rows + 1 lorong
         lebar_unit = (ratio * jarak_dalam) + jarak_lorong  # cm
         
-        # Number of units per ha
-        luas_cm2 = 10000 * 10000  # 1 ha in cm2
-        unit_per_ha = (10000 / (lebar_unit / 100)) * (10000 / (jarak_antar / 100))
+        # Rumpun per meter persegi
+        # Dalam 1 meter: jumlah baris dalam 1 unit legowo
+        # Contoh Legowo 2:1: 2 baris dalam (25+25=50cm) + 1 lorong (50cm) = 100cm total
+        # Jarak antar rumpun dalam baris = 12.5 cm
         
-        # Rumpun per unit
-        rumpun_per_unit = ratio * 2  # 2 rows per ratio
+        # Jumlah rumpun per meter baris
+        rumpun_per_meter_baris = 100 / jarak_antar  # rumpun per meter
         
-        # Total population
-        populasi_per_ha = unit_per_ha * rumpun_per_unit / (ratio + 1)
+        # Jumlah baris per meter lebar
+        baris_per_meter = (100 / lebar_unit) * ratio * 2  # 2 baris per sisi
+        
+        # Total rumpun per m2
+        rumpun_per_m2 = (rumpun_per_meter_baris * baris_per_meter) / ratio
+        
+        # Total per ha (10,000 m2)
+        populasi_per_ha = rumpun_per_m2 * 10000
         total_populasi = populasi_per_ha * luas_lahan_jl
         
         # Yield calculation
