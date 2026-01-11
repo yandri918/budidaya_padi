@@ -1,0 +1,159 @@
+"""
+🧪 Analisis Tanah & PUTS - Soil Analysis
+Interpretation of Soil Test Kit (PUTS - Perangkat Uji Tanah Sawah) results
+"""
+
+import streamlit as st
+import pandas as pd
+import altair as alt
+
+st.set_page_config(page_title="Analisis Tanah", page_icon="🧪", layout="wide")
+
+st.title("🧪 Analisis Tanah & Rekomendasi Pemupukan")
+st.markdown("**Interpretasi hasil PUTS (Perangkat Uji Tanah Sawah) dan rekomendasi spesifik lokasi**")
+st.markdown("---")
+
+tab1, tab2 = st.tabs(["📝 Input Hasil Uji", "ℹ️ Panduan PUTS"])
+
+with tab1:
+    st.header("Input Hasil Pengujian Lapangan")
+    st.write("Masukkan hasil warna yang didapat dari pengujian menggunakan kit PUTS.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("1. Status Nitrogen (N)")
+        uji_n = st.selectbox("Warna Bagan Warna Daun (BWD) / Uji Urea", [
+            "Sangat Rendah (BWD < 3 / Pucat)",
+            "Rendah (BWD 3-4 / Hijau Muda)",
+            "Sedang (BWD 4 / Hijau)",
+            "Tinggi (BWD > 4 / Hijau Gelap)"
+        ])
+        
+        st.subheader("2. Status Fosfor (P)")
+        uji_p = st.selectbox("Warna Ekstrak P", [
+            "Rendah (Bening/Biru Sangat Muda) < 20 ppm",
+            "Sedang (Biru Muda) 20-40 ppm",
+            "Tinggi (Biru Tua) > 40 ppm"
+        ])
+        
+    with col2:
+        st.subheader("3. Status Kalium (K)")
+        uji_k = st.selectbox("Endapan K", [
+            "Rendah (Sedikit/Tidak ada endapan) < 10 mg/100g",
+            "Sedang (Endapan keruh sedang) 10-20 mg/100g",
+            "Tinggi (Endapan tebal/banyak) > 20 mg/100g"
+        ])
+        
+        st.subheader("4. pH Tanah")
+        uji_ph = st.selectbox("Warna Indikator pH", [
+            "Masam (< 5.5) - Merah/Oranye",
+            "Netral (5.5 - 7.0) - Kuning/Hijau Muda",
+            "Basa (> 7.0) - Hijau Tua/Biru"
+        ])
+
+    st.subheader("Informasi Lahan")
+    target_yield = st.slider("Target Hasil (Ton/Ha)", 4.0, 9.0, 6.0, 0.5)
+    
+    st.markdown("---")
+    
+    if st.button("🔍 Analisis & Buat Rekomendasi", type="primary"):
+        st.header("📊 Hasil Analisis & Rekomendasi")
+        
+        # Recommendation Logic based on PUTS standards (simplified General Guidelines)
+        rekom_urea = 0
+        rekom_sp36 = 0
+        rekom_kcl = 0
+        kebutuhan_kapur = 0
+        catatan = []
+
+        # N Logic
+        if "Sangat Rendah" in uji_n:
+            rekom_urea = 300
+            catatan.append("Tanah sangat kekurangan Nitrogen. Perlu pupuk Urea dosis tinggi atau tambah organik.")
+        elif "Rendah" in uji_n:
+            rekom_urea = 250
+        elif "Sedang" in uji_n:
+            rekom_urea = 200
+        else: # Tinggi
+            rekom_urea = 100
+            catatan.append("Status N sudah tinggi, kurangi Urea agar tidak rebah dan rentan penyakit.")
+
+        # P Logic
+        if "Rendah" in uji_p:
+            rekom_sp36 = 150
+            catatan.append("Fosfor rendah. Gunakan SP-36 atau pupuk kandang yang diperkaya fosfat alam.")
+        elif "Sedang" in uji_p:
+            rekom_sp36 = 100
+        else:
+            rekom_sp36 = 50
+            catatan.append("Fosfor tanah tinggi. Cukup pemupukan maintenance.")
+
+        # K Logic
+        if "Rendah" in uji_k:
+            rekom_kcl = 100
+            catatan.append("Kalium rendah. KCL penting untuk kekuatan batang dan pengisian bulir penuh.")
+        elif "Sedang" in uji_k:
+            rekom_kcl = 75
+        else:
+            rekom_kcl = 50
+
+        # Adjust for Target Yield (Basic linear scaling relative to 5 ton baseline)
+        scale_factor = target_yield / 5.0
+        rekom_urea = int(rekom_urea * scale_factor * 0.9) # Efficiency factor
+        rekom_sp36 = int(rekom_sp36 * scale_factor * 0.9)
+        rekom_kcl = int(rekom_kcl * scale_factor * 0.9)
+        
+        # pH Logic
+        if "Masam" in uji_ph:
+            kebutuhan_kapur = 500 # kg/ha dolomit basic recommendation
+            catatan.append("Tanah Masam. Disarankan aplikasi Dolomit 500-1000 kg/ha saat pengolahan tanah.")
+        
+        # Display Recommendations
+        col_res1, col_res2 = st.columns(2)
+        
+        with col_res1:
+            st.subheader("Rekomendasi Pupuk (Kg/Ha)")
+            res_df = pd.DataFrame({
+                "Jenis Pupuk": ["Urea (N)", "SP-36 (P)", "KCL (K)", "Dolomit (Kapur)"],
+                "Jumlah (Kg)": [rekom_urea, rekom_sp36, rekom_kcl, kebutuhan_kapur]
+            })
+            st.dataframe(res_df, hide_index=True)
+            
+            # Chart
+            chart = alt.Chart(res_df).mark_bar().encode(
+                x='Jenis Pupuk',
+                y='Jumlah (Kg)',
+                color='Jenis Pupuk',
+                tooltip=['Jenis Pupuk', 'Jumlah (Kg)']
+            ).properties(title="Komposisi Pupuk Rekomendasi")
+            st.altair_chart(chart, use_container_width=True)
+
+        with col_res2:
+            st.subheader("💡 Catatan Agronomis")
+            for i, note in enumerate(catatan, 1):
+                st.info(f"{i}. {note}")
+            
+            st.markdown("""
+            **Waktu Aplikasi:**
+            *   **Urea:** 3x aplikasi (Dasar, 3-4 MST, 6-7 MST)
+            *   **SP-36:** 100% saat tanam (pupuk dasar)
+            *   **KCL:** 2x aplikasi (50% Dasar, 50% Primordia/Bunting)
+            *   **Dolomit:** 2 minggu sebelum tanam
+            """)
+
+with tab2:
+    st.header("Panduan Singkat PUTS")
+    st.markdown("""
+    **Perangkat Uji Tanah Sawah (PUTS)** adalah alat bantu analisis kimia tanah secara cepat di lapangan.
+    
+    **Cara Pengambilan Sampel Tanah:**
+    1.  Ambil tanah dari 5-10 titik berbeda secara acak (zig-zag).
+    2.  Ambil lapisan olah (0-20 cm).
+    3.  Campurkan merata (komposit) dalam ember plastik.
+    4.  Ambil kira-kira 0.5 kg untuk diuji.
+    
+    **Penting:**
+    *   Jangan ambil sampel dekat pematang, bekas pembakaran jerami, atau tumpukan pupuk kandang.
+    *   Lakukan uji sebelum pengolahan tanah atau pemupukan dasar.
+    """)
