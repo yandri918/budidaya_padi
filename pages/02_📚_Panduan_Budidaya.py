@@ -149,6 +149,12 @@ with tab2:
         
         luas_lahan_jl = st.number_input("Luas Lahan (ha)", 0.1, 100.0, 1.0, 0.1, key="jl_luas")
         bibit_per_lubang = st.number_input("Bibit per Lubang", 1, 5, 2, 1, key="jl_bibit")
+        anakan_produktif = st.number_input(
+            "Anakan Produktif per Rumpun", 
+            5, 50, 20, 1, 
+            key="jl_anakan",
+            help="Jumlah anakan produktif yang menghasilkan malai per rumpun (rata-rata 15-25)"
+        )
     
     with col_jl2:
         st.markdown("**Parameter Hasil:**")
@@ -196,7 +202,6 @@ with tab2:
         
         # Yield calculation
         # Potensi hasil = populasi × anakan produktif × bulir/malai × berat bulir
-        anakan_produktif = bibit_per_lubang * 15  # Estimate 15 productive tillers per seedling
         total_anakan = total_populasi * anakan_produktif
         total_bulir = total_anakan * bulir_per_malai
         total_berat_gram = total_bulir * (berat_1000_bulir / 1000)
