@@ -164,15 +164,12 @@ with tab3:
     
     # Altair chart for fertilizer schedule
     chart_data = pd.DataFrame({
-        'HST': [0, 10, 30, 50],
-        'Urea': [0, 100, 100, 50],
-        'NPK': [200, 0, 100, 0]
+        'HST': [0, 10, 30, 50, 0, 10, 30, 50],
+        'Pupuk': ['Urea', 'Urea', 'Urea', 'Urea', 'NPK', 'NPK', 'NPK', 'NPK'],
+        'Dosis': [0, 100, 100, 50, 200, 0, 100, 0]
     })
     
-    chart = alt.Chart(chart_data).transform_fold(
-        ['Urea', 'NPK'],
-        as_=['Pupuk', 'Dosis']
-    ).mark_line(point=True).encode(
+    chart = alt.Chart(chart_data).mark_line(point=True).encode(
         x=alt.X('HST:Q', title='Hari Setelah Tanam (HST)'),
         y=alt.Y('Dosis:Q', title='Dosis (kg/ha)'),
         color='Pupuk:N',
