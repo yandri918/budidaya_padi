@@ -1,11 +1,21 @@
 """
 🐛 Hama & Penyakit Padi - Rice Pest and Disease Database
 Comprehensive guide for pest and disease management
+Database from AgriSensa Commodities
 """
 
 import streamlit as st
 import pandas as pd
 import altair as alt
+import sys
+from pathlib import Path
+
+# Add parent directory to path
+parent_dir = str(Path(__file__).parent.parent)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+from data.pest_disease_data import get_all_pests, get_all_diseases, search_by_symptom
 
 st.set_page_config(page_title="Hama & Penyakit", page_icon="🐛", layout="wide")
 
@@ -13,248 +23,230 @@ st.title("🐛 Hama & Penyakit Padi")
 st.markdown("**Database lengkap hama dan penyakit padi dengan cara pengendalian**")
 st.markdown("---")
 
-# Pest and Disease Database
-PESTS = {
-    'Wereng Coklat': {
-        'type': 'Hama',
-        'latin': 'Nilaparvata lugens',
-        'symptoms': 'Hopperburn (tanaman menguning dan mengering), tanaman kerdil',
-        'damage': 'Menghisap cairan tanaman, menularkan virus tungro',
-        'control': [
-            'Gunakan varietas tahan (Inpari 32, 42, 43)',
-            'Tanam serentak dalam satu hamparan',
-            'Pergiliran tanaman',
-            'Insektisida: Imidakloprid, Buprofezin'
-        ],
-        'prevention': 'Hindari pemupukan N berlebihan, jaga sanitasi lahan',
-        'critical_period': '30-60 HST'
-    },
-    'Penggerek Batang': {
-        'type': 'Hama',
-        'latin': 'Scirpophaga incertulas',
-        'symptoms': 'Sundep (anakan mati), beluk (malai hampa)',
-        'damage': 'Larva menggerek batang, merusak jaringan pengangkut',
-        'control': [
-            'Sanitasi: kumpulkan dan musnahkan jerami',
-            'Perangkap feromon',
-            'Musuh alami: Trichogramma',
-            'Insektisida: Karbofuran, Fipronil'
-        ],
-        'prevention': 'Tanam serentak, pergiliran tanaman, varietas tahan',
-        'critical_period': '0-40 HST'
-    },
-    'Walang Sangit': {
-        'type': 'Hama',
-        'latin': 'Leptocorisa oratorius',
-        'symptoms': 'Gabah hampa, beras hitam, bau tidak sedap',
-        'damage': 'Menghisap bulir padi yang sedang masak susu',
-        'control': [
-            'Hand picking (pungut manual)',
-            'Perangkap jaring',
-            'Insektisida: Sipermetrin, Deltametrin',
-            'Aplikasi saat pagi/sore hari'
-        ],
-        'prevention': 'Tanam serentak, jaga kebersihan pematang',
-        'critical_period': '80-100 HST'
-    },
-    'Tikus': {
-        'type': 'Hama',
-        'latin': 'Rattus argentiventer',
-        'symptoms': 'Batang terpotong, bulir habis dimakan',
-        'damage': 'Memakan bulir dan batang padi',
-        'control': [
-            'Gropyokan (perburuan massal)',
-            'Perangkap (bubu, jebakan)',
-            'Rodentisida: Klerat, Racumin',
-            'TBS (Trap Barrier System)'
-        ],
-        'prevention': 'Buat pagar keliling, sanitasi sarang, tanam serentak',
-        'critical_period': 'Sepanjang musim'
-    }
-}
-
-DISEASES = {
-    'Blast (Blas)': {
-        'type': 'Penyakit',
-        'pathogen': 'Pyricularia oryzae (jamur)',
-        'symptoms': 'Bercak coklat berbentuk belah ketupat pada daun, leher malai patah',
-        'damage': 'Daun mati, malai hampa, puso',
-        'control': [
-            'Varietas tahan: Inpari 32, 42, 43',
-            'Fungisida: Triklorfosmethyl, Isoprothiolane',
-            'Aplikasi saat gejala awal',
-            'Rotasi fungisida'
-        ],
-        'prevention': 'Pemupukan berimbang, hindari N berlebih, drainase baik',
-        'critical_period': '40-80 HST'
-    },
-    'Hawar Daun Bakteri': {
-        'type': 'Penyakit',
-        'pathogen': 'Xanthomonas oryzae (bakteri)',
-        'symptoms': 'Daun menguning dari ujung, mengering seperti terbakar',
-        'damage': 'Daun mati, anakan berkurang, hasil turun 20-30%',
-        'control': [
-            'Varietas tahan: Inpari 13, Ciherang',
-            'Bakterisida: Streptomisin, Oksitetrasiklin',
-            'Sanitasi: musnahkan jerami terinfeksi',
-            'Atur pengairan (tidak tergenang terus)'
-        ],
-        'prevention': 'Gunakan benih sehat, hindari luka mekanis',
-        'critical_period': '30-60 HST'
-    },
-    'Tungro': {
-        'type': 'Penyakit',
-        'pathogen': 'Rice Tungro Virus (virus)',
-        'symptoms': 'Daun kuning-oranye, tanaman kerdil, anakan sedikit',
-        'damage': 'Tanaman kerdil, gabah hampa, puso',
-        'control': [
-            'Kendalikan wereng hijau (vektor)',
-            'Cabut dan musnahkan tanaman sakit',
-            'Varietas tahan: Inpari 33, Ciherang',
-            'Insektisida untuk wereng'
-        ],
-        'prevention': 'Tanam serentak, varietas tahan, kendalikan wereng',
-        'critical_period': '0-40 HST'
-    },
-    'Busuk Batang': {
-        'type': 'Penyakit',
-        'pathogen': 'Rhizoctonia solani (jamur)',
-        'symptoms': 'Bercak hitam pada pelepah daun dekat permukaan air',
-        'damage': 'Batang busuk, tanaman rebah, hasil turun',
-        'control': [
-            'Fungisida: Validamycin, Hexaconazole',
-            'Drainase berkala',
-            'Kurangi pemupukan N',
-            'Aplikasi saat gejala awal'
-        ],
-        'prevention': 'Jarak tanam tidak terlalu rapat, drainase baik',
-        'critical_period': '50-80 HST'
-    }
-}
+# Load data
+PESTS = get_all_pests()
+DISEASES = get_all_diseases()
 
 # Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["🐛 Hama", "🦠 Penyakit", "📊 Perbandingan", "💊 Jadwal Pengendalian"])
+tab1, tab2, tab3, tab4 = st.tabs(["🐛 Hama", "🦠 Penyakit", "🔍 Cari Gejala", "📊 Perbandingan"])
 
 with tab1:
     st.header("🐛 Database Hama Padi")
+    st.markdown(f"**Total: {len(PESTS)} Hama Utama**")
     
-    for name, data in PESTS.items():
-        with st.expander(f"🐛 {name} ({data['latin']})", expanded=False):
+    for pest in PESTS:
+        severity_color = "🔴" if pest['severity'] == 'high' else "🟡" if pest['severity'] == 'medium' else "🟢"
+        
+        with st.expander(f"{severity_color} {pest['name_id']} ({pest['scientific']})", expanded=False):
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### Gejala & Kerusakan")
-                st.write(f"**Gejala:** {data['symptoms']}")
-                st.write(f"**Kerusakan:** {data['damage']}")
-                st.warning(f"⚠️ **Periode Kritis:** {data['critical_period']}")
+                st.markdown("### 📋 Informasi")
+                st.write(f"**Nama Ilmiah:** *{pest['scientific']}*")
+                st.write(f"**Tingkat Bahaya:** {pest['severity'].upper()}")
+                st.write(f"**Fase Kerusakan:** {', '.join(pest['damage_stage'])}")
+                
+                st.markdown("### 🔍 Gejala")
+                for symptom in pest['symptoms']:
+                    st.write(f"• {symptom}")
+                
+                st.warning(f"⚠️ **Ambang Ekonomi:** {pest['economic_threshold']}")
+                st.info(f"📅 **Puncak Serangan:** {pest['peak_season']}")
             
             with col2:
-                st.markdown("### Pengendalian")
-                for i, control in enumerate(data['control'], 1):
-                    st.write(f"{i}. {control}")
+                st.markdown("### 🛡️ Pengendalian")
                 
-                st.info(f"💡 **Pencegahan:** {data['prevention']}")
+                st.markdown("**🌱 Kultur Teknis:**")
+                for control in pest['control']['cultural']:
+                    st.write(f"• {control}")
+                
+                st.markdown("**🐞 Hayati (Biological):**")
+                for control in pest['control']['biological']:
+                    st.write(f"• {control}")
+                
+                st.markdown("**💊 Kimia (Chemical):**")
+                for control in pest['control']['chemical']:
+                    st.write(f"• {control}")
 
 with tab2:
     st.header("🦠 Database Penyakit Padi")
+    st.markdown(f"**Total: {len(DISEASES)} Penyakit Utama**")
     
-    for name, data in DISEASES.items():
-        with st.expander(f"🦠 {name} - {data['pathogen']}", expanded=False):
+    for disease in DISEASES:
+        severity_color = "🔴" if disease['severity'] == 'high' else "🟡" if disease['severity'] == 'medium' else "🟢"
+        
+        with st.expander(f"{severity_color} {disease['name_id']} ({disease['scientific']})", expanded=False):
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown("### Gejala & Kerusakan")
-                st.write(f"**Gejala:** {data['symptoms']}")
-                st.write(f"**Kerusakan:** {data['damage']}")
-                st.warning(f"⚠️ **Periode Kritis:** {data['critical_period']}")
+                st.markdown("### 📋 Informasi")
+                st.write(f"**Patogen:** *{disease['scientific']}*")
+                st.write(f"**Tingkat Bahaya:** {disease['severity'].upper()}")
+                st.write(f"**Fase Kerusakan:** {', '.join(disease['damage_stage'])}")
+                
+                st.markdown("### 🔍 Gejala")
+                for symptom in disease['symptoms']:
+                    st.write(f"• {symptom}")
+                
+                st.warning(f"⚠️ **Kondisi Menguntungkan:** {disease['favorable_conditions']}")
+                st.info(f"📅 **Puncak Serangan:** {disease['peak_season']}")
             
             with col2:
-                st.markdown("### Pengendalian")
-                for i, control in enumerate(data['control'], 1):
-                    st.write(f"{i}. {control}")
+                st.markdown("### 🛡️ Pengendalian")
                 
-                st.info(f"💡 **Pencegahan:** {data['prevention']}")
+                st.markdown("**🌱 Kultur Teknis:**")
+                for control in disease['control']['cultural']:
+                    st.write(f"• {control}")
+                
+                st.markdown("**🐞 Hayati (Biological):**")
+                for control in disease['control']['biological']:
+                    st.write(f"• {control}")
+                
+                st.markdown("**💊 Kimia (Chemical):**")
+                for control in disease['control']['chemical']:
+                    st.write(f"• {control}")
 
 with tab3:
+    st.header("🔍 Cari Berdasarkan Gejala")
+    
+    st.markdown("Masukkan gejala yang Anda lihat di tanaman padi:")
+    
+    search_query = st.text_input("Cari gejala (contoh: daun kuning, gabah hampa, busuk)", "")
+    
+    if search_query:
+        results = search_by_symptom(search_query)
+        
+        if results:
+            st.success(f"✅ Ditemukan {len(results)} hasil:")
+            
+            for item in results:
+                item_type = "🐛 Hama" if 'economic_threshold' in item else "🦠 Penyakit"
+                severity_color = "🔴" if item['severity'] == 'high' else "🟡" if item['severity'] == 'medium' else "🟢"
+                
+                with st.expander(f"{severity_color} {item_type}: {item['name_id']}", expanded=True):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.write(f"**Nama Ilmiah:** *{item['scientific']}*")
+                        st.markdown("**Gejala:**")
+                        for symptom in item['symptoms']:
+                            st.write(f"• {symptom}")
+                    
+                    with col2:
+                        st.markdown("**Pengendalian Utama:**")
+                        st.write("🌱 **Kultur Teknis:**")
+                        for i, control in enumerate(item['control']['cultural'][:3], 1):
+                            st.write(f"{i}. {control}")
+        else:
+            st.warning("❌ Tidak ditemukan hasil. Coba kata kunci lain.")
+    else:
+        st.info("💡 Ketik gejala yang Anda amati untuk mencari hama/penyakit yang cocok")
+
+with tab4:
     st.header("📊 Perbandingan Hama & Penyakit")
     
     # Create comparison dataframe
     all_items = []
-    for name, data in PESTS.items():
+    
+    for pest in PESTS:
         all_items.append({
-            'Nama': name,
+            'Nama': pest['name_id'],
             'Jenis': 'Hama',
-            'Periode Kritis': data['critical_period'],
-            'Tingkat Bahaya': 'Tinggi' if 'Wereng' in name or 'Tikus' in name else 'Sedang'
+            'Tingkat Bahaya': pest['severity'].upper(),
+            'Fase': ', '.join(pest['damage_stage'])
         })
     
-    for name, data in DISEASES.items():
+    for disease in DISEASES:
         all_items.append({
-            'Nama': name,
+            'Nama': disease['name_id'],
             'Jenis': 'Penyakit',
-            'Periode Kritis': data['critical_period'],
-            'Tingkat Bahaya': 'Tinggi' if 'Blast' in name or 'Tungro' in name else 'Sedang'
+            'Tingkat Bahaya': disease['severity'].upper(),
+            'Fase': ', '.join(disease['damage_stage'])
         })
     
     comparison_df = pd.DataFrame(all_items)
+    
+    st.subheader("📋 Tabel Lengkap")
     st.dataframe(comparison_df, use_container_width=True, hide_index=True)
     
-    # Chart
-    chart = alt.Chart(comparison_df).mark_bar().encode(
-        x=alt.X('Jenis:N', title='Jenis'),
-        y=alt.Y('count():Q', title='Jumlah'),
-        color='Tingkat Bahaya:N',
-        tooltip=['Jenis', 'count()', 'Tingkat Bahaya']
-    ).properties(
-        title='Distribusi Hama & Penyakit',
-        height=300
-    )
+    # Charts
+    col_chart1, col_chart2 = st.columns(2)
     
-    st.altair_chart(chart, use_container_width=True)
-
-with tab4:
-    st.header("💊 Jadwal Pengendalian Terpadu")
+    with col_chart1:
+        # Distribution by type
+        type_chart = alt.Chart(comparison_df).mark_bar().encode(
+            x=alt.X('Jenis:N', title='Jenis'),
+            y=alt.Y('count():Q', title='Jumlah'),
+            color=alt.Color('Jenis:N', scale=alt.Scale(domain=['Hama', 'Penyakit'], range=['#FF6B6B', '#4ECDC4'])),
+            tooltip=['Jenis', 'count()']
+        ).properties(
+            title='Distribusi Hama vs Penyakit',
+            height=300
+        )
+        
+        st.altair_chart(type_chart, use_container_width=True)
+    
+    with col_chart2:
+        # Distribution by severity
+        severity_chart = alt.Chart(comparison_df).mark_bar().encode(
+            x=alt.X('Tingkat Bahaya:N', title='Tingkat Bahaya', sort=['HIGH', 'MEDIUM', 'LOW']),
+            y=alt.Y('count():Q', title='Jumlah'),
+            color=alt.Color('Tingkat Bahaya:N', 
+                          scale=alt.Scale(domain=['HIGH', 'MEDIUM', 'LOW'], 
+                                        range=['#FF4444', '#FFA500', '#4CAF50'])),
+            tooltip=['Tingkat Bahaya', 'count()']
+        ).properties(
+            title='Distribusi Tingkat Bahaya',
+            height=300
+        )
+        
+        st.altair_chart(severity_chart, use_container_width=True)
+    
+    # PHT Schedule
+    st.markdown("---")
+    st.subheader("💊 Jadwal Pengendalian Hama Terpadu (PHT)")
     
     st.markdown("""
-    ### Strategi PHT (Pengendalian Hama Terpadu)
+    ### Strategi PHT
     
-    **Prinsip PHT:**
-    1. Pencegahan (preventif) lebih baik dari pengobatan
+    **Prinsip:**
+    1. Pencegahan lebih baik dari pengobatan
     2. Gunakan musuh alami
     3. Pestisida sebagai pilihan terakhir
-    4. Monitoring rutin
+    4. Monitoring rutin 2x/minggu
     """)
     
     schedule_df = pd.DataFrame({
         'Periode (HST)': ['0-20', '20-40', '40-60', '60-80', '80-100', '100-120'],
         'Target Utama': [
-            'Tikus, Keong',
-            'Penggerek batang, Tungro',
-            'Wereng, Blast',
-            'Blast, Hawar daun',
-            'Walang sangit',
-            'Tikus, Burung'
+            'Tikus, Keong, Lalat Bibit',
+            'Penggerek batang, Tungro, Wereng Hijau',
+            'Wereng Coklat, Blast, Kepik Bergaris',
+            'Blast, Hawar daun, Busuk Pelepah',
+            'Walang sangit, Hampa Palsu',
+            'Tikus, Burung, Bercak Coklat'
         ],
         'Tindakan': [
-            'Gropyokan, sanitasi',
-            'Monitoring, perangkap',
-            'Monitoring, fungisida',
-            'Fungisida, bakterisida',
-            'Hand picking, insektisida',
-            'Pengusiran, jaring'
+            'Gropyokan, sanitasi, monitoring',
+            'Perangkap, eradikasi tanaman sakit',
+            'Monitoring, fungisida/insektisida jika perlu',
+            'Fungisida, bakterisida, drainase',
+            'Hand picking, insektisida spot',
+            'Pengusiran, jaring, panen tepat waktu'
         ]
     })
     
     st.dataframe(schedule_df, use_container_width=True, hide_index=True)
-    
-    st.success("""
-    💡 **Tips Pengendalian Efektif:**
-    - Monitoring rutin 2x seminggu
-    - Catat populasi hama/intensitas penyakit
-    - Aplikasi pestisida sesuai ambang ekonomi
-    - Rotasi pestisida untuk hindari resistensi
-    - Gunakan APD saat aplikasi
-    """)
 
 st.markdown("---")
-st.caption("⚠️ **Penting:** Selalu ikuti dosis dan cara aplikasi pestisida sesuai label")
+st.success("""
+💡 **Tips Pengendalian Efektif:**
+- Monitoring rutin 2x seminggu
+- Catat populasi hama/intensitas penyakit
+- Aplikasi pestisida sesuai ambang ekonomi
+- Rotasi pestisida untuk hindari resistensi
+- Gunakan APD saat aplikasi
+- Prioritaskan pengendalian kultur teknis dan hayati
+""")
+
+st.caption("⚠️ **Penting:** Selalu ikuti dosis dan cara aplikasi pestisida sesuai label. Database ini dari AgriSensa Commodities.")
