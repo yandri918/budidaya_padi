@@ -121,10 +121,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper for Time Greeting
+# Helper for Time Greeting (WIB - UTC+7)
 def get_greeting():
-    hour = datetime.now().hour
-    if 5 <= hour < 11: return "Sugeng Enjang (Selamat Pagi)"
+    # Streamlit Cloud is usually UTC. Adjust to WIB (UTC+7)
+    utc_now = datetime.utcnow()
+    wib_now = utc_now + timedelta(hours=7)
+    hour = wib_now.hour
+    
+    if 4 <= hour < 11: return "Sugeng Enjang (Selamat Pagi)"
     elif 11 <= hour < 15: return "Sugeng Siang (Selamat Siang)"
     elif 15 <= hour < 18: return "Sugeng Sonten (Selamat Sore)"
     else: return "Sugeng Dalu (Selamat Malam)"
@@ -132,8 +136,11 @@ def get_greeting():
 # Helper for Primbon
 def get_pasaran():
     epoch = datetime(2024, 1, 1) # Monday Pahing
-    today = datetime.now()
-    delta = (today - epoch).days
+    # Use WIB for date checking too
+    utc_now = datetime.utcnow()
+    wib_now = utc_now + timedelta(hours=7)
+    
+    delta = (wib_now - epoch).days
     pasarans = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"]
     return pasarans[delta % 5]
 
@@ -157,7 +164,9 @@ market_data = fetch_market_data()
 # 1. Header Section
 greeting = get_greeting()
 pasaran = get_pasaran()
-today_str = datetime.now().strftime("%A, %d %B %Y")
+# Use WIB for display
+wib_now = datetime.utcnow() + timedelta(hours=7)
+today_str = wib_now.strftime("%A, %d %B %Y")
 
 st.markdown(f"""
 <div class='dashboard-header'>
