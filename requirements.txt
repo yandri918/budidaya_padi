@@ -13,4 +13,9 @@ plotly
 
 # Utilities
 openpyxl
+requests
+Pillow
 
+# Maps & UI
+folium
+streamlit-folium
