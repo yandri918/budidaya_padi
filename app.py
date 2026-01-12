@@ -6,7 +6,7 @@ Comprehensive application for rice farming with AI, ML, and advanced analytics
 import streamlit as st
 import pandas as pd
 import altair as alt
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import random
 
