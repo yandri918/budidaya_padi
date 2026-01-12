@@ -139,6 +139,21 @@ def get_pasaran():
 
 # --- DASHBOARD CONTENT ---
 
+# Initialize services
+import sys
+from pathlib import Path
+if str(Path(__file__).parent) not in sys.path:
+    sys.path.append(str(Path(__file__).parent))
+
+from services.market_service import MarketService
+
+@st.cache_data(ttl=3600) # Cache for 1 hour
+def fetch_market_data():
+    service = MarketService()
+    return service.get_rice_prices()
+
+market_data = fetch_market_data()
+
 # 1. Header Section
 greeting = get_greeting()
 pasaran = get_pasaran()
@@ -175,20 +190,30 @@ with col_alert:
     f_col3.metric("Saldo Kas", "Rp 8.500.000", "Aman")
 
 with col_market:
+    # Build dynamic HTML for prices
+    gkp = market_data['gkp']
+    beras = market_data['beras_medium']
+    
+    gkp_arrow = "▲" if gkp['change'] >= 0 else "▼"
+    gkp_color = "green" if gkp['change'] >= 0 else "red"
+    
+    beras_arrow = "▲" if beras['change'] >= 0 else "▼"
+    beras_color = "green" if beras['change'] >= 0 else "red"
+    
     st.markdown("### 📈 Harga Pasar (Live)")
-    st.markdown("""
+    st.markdown(f"""
     <div class='price-ticker'>
         🌾 GKP (Gabah Kering Panen)<br>
-        <span style='font-size: 1.5rem'>Rp 7.200 / kg</span><br>
-        <span style='color: green'>▲ Rp 200 (Hari ini)</span>
+        <span style='font-size: 1.5rem'>Rp {gkp['price']:,.0f} / kg</span><br>
+        <span style='color: {gkp_color}'>{gkp_arrow} Rp {abs(gkp['change']):,.0f} (Hari ini)</span>
     </div>
     <div class='price-ticker'>
         🍚 Beras Medium<br>
-        <span style='font-size: 1.5rem'>Rp 13.500 / kg</span><br>
-        <span style='color: red'>▼ Rp 100 (Hari ini)</span>
+        <span style='font-size: 1.5rem'>Rp {beras['price']:,.0f} / kg</span><br>
+        <span style='color: {beras_color}'>{beras_arrow} Rp {abs(beras['change']):,.0f} (Hari ini)</span>
     </div>
     """, unsafe_allow_html=True)
-    st.caption("Sumber: PIHPS Nasional (Simulasi)")
+    st.caption("Sumber: Bapanas (Nasional)")
 
 # 3. Quick Actions Grid
 st.markdown("---")
