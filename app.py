@@ -4,17 +4,21 @@ Comprehensive application for rice farming with AI, ML, and advanced analytics
 """
 
 import streamlit as st
+import pandas as pd
+import altair as alt
 from datetime import datetime
+import time
+import random
 
 # Page config
 st.set_page_config(
-    page_title="Budidaya Padi",
+    page_title="AgriSensa Padi",
     page_icon="🌾",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for design system
+# Custom CSS for Dashboard
 st.markdown("""
 <style>
     /* Main theme colors */
@@ -22,407 +26,235 @@ st.markdown("""
         --primary-color: #2E7D32;
         --secondary-color: #558B2F;
         --accent-color: #FDD835;
-        --background: #F1F8E9;
+        --card-bg: #FFFFFF;
+        --bg-color: #F8F9FA;
     }
     
-    /* Header styling */
-    .main-header {
-        background: linear-gradient(135deg, #2E7D32 0%, #558B2F 100%);
+    .stApp {
+        background-color: var(--bg-color);
+    }
+    
+    /* Dashboard Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
         padding: 2rem;
-        border-radius: 10px;
+        border-radius: 16px;
         color: white;
-        text-align: center;
         margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     }
     
-    .main-header h1 {
-        margin: 0;
-        font-size: 2.5rem;
+    .dashboard-header h1 {
+        color: white !important;
+        font-family: 'Helvetica Neue', sans-serif;
         font-weight: 700;
+        margin-bottom: 0.5rem;
     }
     
-    .main-header p {
-        margin: 0.5rem 0 0 0;
-        font-size: 1.1rem;
-        opacity: 0.9;
+    .weather-widget {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 10px 20px;
+        border-radius: 12px;
+        display: inline-block;
+        backdrop-filter: blur(5px);
+        margin-top: 10px;
     }
-    
-    /* Card styling */
-    .info-card {
-        background: white;
+
+    /* Cards */
+    .stat-card {
+        background-color: var(--card-bg);
+        border-radius: 12px;
         padding: 1.5rem;
-        border-radius: 10px;
-        border-left: 4px solid #2E7D32;
-        margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-left: 5px solid var(--primary-color);
+        transition: transform 0.2s;
     }
     
-    /* Metric cards */
-    .metric-card {
-        background: linear-gradient(135deg, #F1F8E9 0%, #DCEDC8 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    }
+    
+    .alert-card {
+        background-color: #FFF3E0;
+        border-left: 5px solid #FF9800;
+        padding: 1rem;
+        border-radius: 8px;
+        color: #E65100;
+        margin-bottom: 1rem;
+    }
+
+    /* Price Ticker */
+    .price-ticker {
+        background-color: #E8F5E9;
+        color: #2E7D32;
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: bold;
         text-align: center;
-        border: 2px solid #2E7D32;
+        margin-bottom: 20px;
+        border: 1px solid #C8E6C9;
     }
     
-    /* Sidebar styling */
-    .css-1d391kg {
+    /* Feature Buttons */
+    .feature-btn {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        cursor: pointer;
+        border: 1px solid #eee;
+    }
+    
+    .feature-btn h3 {
+        font-size: 1.1rem;
+        margin-top: 10px;
+        color: #333;
+    }
+    
+    .feature-btn:hover {
+        border-color: #2E7D32;
         background-color: #F1F8E9;
     }
-    
-    /* Button styling */
-    .stButton>button {
-        background: linear-gradient(135deg, #2E7D32 0%, #558B2F 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 2rem;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
-    }
-    
-    /* Tab styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        background-color: #E8F5E9;
-        border-radius: 8px 8px 0 0;
-        padding: 10px 20px;
-        font-weight: 600;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #2E7D32 0%, #558B2F 100%);
-        color: white;
-    }
+
 </style>
 """, unsafe_allow_html=True)
 
-# Sidebar
-with st.sidebar:
-    st.markdown("""
-    <div style='text-align: center; padding: 1rem;'>
-        <h1 style='color: #2E7D32; margin: 0;'>🌾</h1>
-        <h2 style='color: #2E7D32; margin: 0.5rem 0;'>Budidaya Padi</h2>
-        <p style='color: #666; font-size: 0.9rem;'>Rice Cultivation Management</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # Module categories
-    st.markdown("### 📊 Modul Utama")
-    st.info("""
-    **Pilih modul dari menu Pages di atas** ⬆️
-    
-    Atau gunakan navigasi di bawah:
-    """)
-    
-    with st.expander("💰 Perencanaan & Keuangan"):
-        st.markdown("""
-        - 📋 RAB Calculator
-        - 📊 Analisis Bisnis
-        - 💰 ROI & Financial Analysis
-        """)
-    
-    with st.expander("🌾 Budidaya & Teknis"):
-        st.markdown("""
-        - 📚 Panduan Budidaya
-        - 🌾 Varietas Padi
-        - 📋 SOP Lengkap
-        - 🧪 Kalkulator Pupuk
-        - 💧 Manajemen Air
-        """)
-    
-    with st.expander("🐛 Hama & Penyakit"):
-        st.markdown("""
-        - 🐛 Database Hama & Penyakit
-        - 💦 Strategi Penyemprotan
-        - 📸 Deteksi Penyakit AI
-        """)
-    
-    with st.expander("📈 Monitoring & Prediksi"):
-        st.markdown("""
-        - 📏 Pantau Pertumbuhan
-        - 📈 Prediksi Harga
-        - 🌡️ Monitoring Cuaca
-        - 📅 Kalender Tanam
-        """)
-    
-    with st.expander("🤖 AI & Machine Learning"):
-        st.markdown("""
-        - 🤖 AI Saran
-        - 🔬 PyCaret ML Lab
-        - 📊 Analytics Hub
-        """)
-    
-    with st.expander("📊 Visualisasi & Analitik"):
-        st.markdown("""
-        - 📊 Visualisasi Altair
-        - 📊 Statistik Penelitian
-        - 📊 Dashboard & Reports
-        """)
-    
-    with st.expander("📔 Dokumentasi"):
-        st.markdown("""
-        - 📔 Jurnal Harian
-        - 📊 Dashboard & Reports
-        """)
-    
-    st.markdown("---")
-    
-    # Quick stats
-    st.markdown("### 📊 Quick Stats")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Modules", "20+", help="Total available modules")
-    with col2:
-        st.metric("Features", "100+", help="Total features")
-    
-    st.markdown("---")
-    st.caption(f"© 2026 Budidaya Padi v1.0")
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d')}")
+# Helper for Time Greeting
+def get_greeting():
+    hour = datetime.now().hour
+    if 5 <= hour < 11: return "Sugeng Enjang (Selamat Pagi)"
+    elif 11 <= hour < 15: return "Sugeng Siang (Selamat Siang)"
+    elif 15 <= hour < 18: return "Sugeng Sonten (Selamat Sore)"
+    else: return "Sugeng Dalu (Selamat Malam)"
 
-# Main content
-st.markdown("""
-<div class='main-header'>
-    <h1>🌾 Budidaya Padi</h1>
-    <p>Sistem Manajemen Budidaya Padi Terpadu dengan AI & Machine Learning</p>
+# Helper for Primbon
+def get_pasaran():
+    epoch = datetime(2024, 1, 1) # Monday Pahing
+    today = datetime.now()
+    delta = (today - epoch).days
+    pasarans = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"]
+    return pasarans[delta % 5]
+
+# --- DASHBOARD CONTENT ---
+
+# 1. Header Section
+greeting = get_greeting()
+pasaran = get_pasaran()
+today_str = datetime.now().strftime("%A, %d %B %Y")
+
+st.markdown(f"""
+<div class='dashboard-header'>
+    <h1>🌾 {greeting}, Pak Tani!</h1>
+    <p>Selamat datang di Command Center AgriSensa. Mari cek kondisi lahan hari ini.</p>
+    <div class='weather-widget'>
+        📅 {today_str} • 🕉️ {pasaran} • ⛅ Cerah Berawan (28°C)
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Welcome section
-col1, col2, col3 = st.columns(3)
+# 2. Main Metrics & Alerts
+col_alert, col_market = st.columns([2, 1])
 
-with col1:
+with col_alert:
+    # Pranata Mangsa Alert (Simulated logic from Calendar Module)
     st.markdown("""
-    <div class='metric-card'>
-        <h2 style='color: #2E7D32; margin: 0;'>🎯</h2>
-        <h3>Comprehensive</h3>
-        <p>20+ modul lengkap untuk semua aspek budidaya padi</p>
+    <div class='alert-card'>
+        <strong>⚠️ Peringatan Dini (Mangsa Kalima):</strong><br>
+        Curah hujan mulai tinggi. Waspada serangan <strong>Wereng Coklat</strong> dan penyakit <strong>Blas</strong>. 
+        Segera cek drainase sawah!
     </div>
     """, unsafe_allow_html=True)
+    
+    # Financial Summary (Mock from Logbook)
+    st.markdown("### 💰 Status Keuangan Bulan Ini")
+    f_col1, f_col2, f_col3 = st.columns(3)
+    f_col1.metric("Pengeluaran", "Rp 1.500.000", "Pupuk & Upah")
+    f_col2.metric("Pemasukan (Est)", "Rp 0", "-")
+    f_col3.metric("Saldo Kas", "Rp 8.500.000", "Aman")
 
-with col2:
+with col_market:
+    st.markdown("### 📈 Harga Pasar (Live)")
     st.markdown("""
-    <div class='metric-card'>
-        <h2 style='color: #2E7D32; margin: 0;'>🤖</h2>
-        <h3>AI-Powered</h3>
-        <p>Machine learning dengan PyCaret untuk prediksi akurat</p>
+    <div class='price-ticker'>
+        🌾 GKP (Gabah Kering Panen)<br>
+        <span style='font-size: 1.5rem'>Rp 7.200 / kg</span><br>
+        <span style='color: green'>▲ Rp 200 (Hari ini)</span>
+    </div>
+    <div class='price-ticker'>
+        🍚 Beras Medium<br>
+        <span style='font-size: 1.5rem'>Rp 13.500 / kg</span><br>
+        <span style='color: red'>▼ Rp 100 (Hari ini)</span>
     </div>
     """, unsafe_allow_html=True)
+    st.caption("Sumber: PIHPS Nasional (Simulasi)")
 
-with col3:
-    st.markdown("""
-    <div class='metric-card'>
-        <h2 style='color: #2E7D32; margin: 0;'>📊</h2>
-        <h3>Data-Driven</h3>
-        <p>Visualisasi interaktif dengan Altair & analytics mendalam</p>
-    </div>
-    """, unsafe_allow_html=True)
-
+# 3. Quick Actions Grid
 st.markdown("---")
+st.header("🚀 Menu Cepat (Quick Actions)")
 
-# Feature highlights
-st.header("✨ Fitur Unggulan")
+c1, c2, c3, c4 = st.columns(4)
 
-tab1, tab2, tab3, tab4 = st.tabs(["💰 Perencanaan", "🌾 Budidaya", "🤖 AI & ML", "📊 Analytics"])
+with c1:
+    st.markdown("### 🧪 Analisis")
+    st.info("Cek status hara tanah & rekomendasi pupuk")
+    st.image("https://img.icons8.com/color/96/soil-analysis.png", width=60)
+    st.markdown("**Module 10: Analisis Tanah**")
 
-with tab1:
-    st.subheader("Perencanaan & Keuangan")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>📋 RAB Calculator</h4>
-            <p>Hitung Rencana Anggaran Biaya budidaya padi secara detail dengan breakdown:</p>
-            <ul>
-                <li>Persiapan lahan</li>
-                <li>Bibit & persemaian</li>
-                <li>Pupuk (NPK, Urea, SP-36, KCl)</li>
-                <li>Pestisida & herbisida</li>
-                <li>Tenaga kerja</li>
-                <li>Irigasi & air</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>📊 Analisis Bisnis</h4>
-            <p>Analisis kelayakan usaha budidaya padi:</p>
-            <ul>
-                <li>Profitability analysis</li>
-                <li>Break-even point</li>
-                <li>ROI calculator</li>
-                <li>Cash flow projection</li>
-                <li>Sensitivity analysis</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+with c2:
+    st.markdown("### 🐛 Dokter Tanaman")
+    st.info("Identifikasi hama & cari obatnya")
+    st.image("https://img.icons8.com/color/96/bug.png", width=60)
+    st.markdown("**Module 03: Hama & Penyakit**")
 
-with tab2:
-    st.subheader("Panduan Budidaya Padi")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>🌾 Varietas Padi Indonesia</h4>
-            <p>Database lengkap 20+ varietas padi:</p>
-            <ul>
-                <li>IR64, Ciherang, Inpari series</li>
-                <li>Potensi hasil & durasi tanam</li>
-                <li>Ketahanan terhadap hama/penyakit</li>
-                <li>Kesesuaian regional</li>
-                <li>Karakteristik gabah</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>💧 Manajemen Air</h4>
-            <p>Sistem pengairan padi yang efisien:</p>
-            <ul>
-                <li>Jadwal penggenangan</li>
-                <li>Alternate Wetting & Drying (AWD)</li>
-                <li>Monitoring kedalaman air</li>
-                <li>Kalkulator biaya irigasi</li>
-                <li>Hemat air hingga 30%</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+with c3:
+    st.markdown("### 🗓️ Kalender")
+    st.info("Cek hari baik & jadwal tanam")
+    st.image("https://img.icons8.com/color/96/calendar.png", width=60)
+    st.markdown("**Module 06: Kalender Tanam**")
 
-with tab3:
-    st.subheader("AI & Machine Learning")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>🔬 PyCaret ML Lab</h4>
-            <p>Automated Machine Learning untuk padi:</p>
-            <ul>
-                <li>Prediksi hasil panen (yield prediction)</li>
-                <li>Klasifikasi kualitas gabah</li>
-                <li>Auto-compare 15+ algoritma ML</li>
-                <li>Hyperparameter tuning otomatis</li>
-                <li>Model explainability (SHAP)</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>📸 Deteksi Penyakit AI</h4>
-            <p>Computer vision untuk deteksi penyakit:</p>
-            <ul>
-                <li>Upload foto daun/tanaman</li>
-                <li>CNN-based classification</li>
-                <li>Deteksi Blast, Hawar Daun, Tungro</li>
-                <li>Confidence score & rekomendasi</li>
-                <li>Riwayat deteksi</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
+with c4:
+    st.markdown("### 📝 Jurnal")
+    st.info("Catat pengeluaran & kegiatan hari ini")
+    st.image("https://img.icons8.com/color/96/notebook.png", width=60)
+    st.markdown("**Module 12: Logbook**")
 
-with tab4:
-    st.subheader("Analytics & Visualizations")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>📊 Visualisasi Altair</h4>
-            <p>Interactive charts dengan Altair:</p>
-            <ul>
-                <li>Time series analysis</li>
-                <li>Correlation heatmaps</li>
-                <li>Distribution plots</li>
-                <li>Geospatial visualizations</li>
-                <li>Linked brushing & filtering</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("""
-        <div class='info-card'>
-            <h4>📊 Statistik Penelitian</h4>
-            <p>Statistical analysis untuk field trials:</p>
-            <ul>
-                <li>ANOVA (one-way, two-way)</li>
-                <li>RCBD, Latin Square Design</li>
-                <li>Regression analysis</li>
-                <li>Post-hoc tests (Tukey HSD)</li>
-                <li>Publication-ready plots</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
+# 4. Chart Visualization (Mini Dashboard)
 st.markdown("---")
+st.header("📊 Tren Pertumbuhan & Cuaca")
 
-# Getting started
-st.header("🚀 Mulai Menggunakan")
+chart_col1, chart_col2 = st.columns(2)
 
-st.info("""
-**Untuk memulai, pilih modul dari sidebar atau menu Pages di atas.**
+with chart_col1:
+    # Dummy Growth Data
+    growth_data = pd.DataFrame({
+        'HST': [10, 20, 30, 40, 50],
+        'Tinggi (cm)': [15, 25, 45, 60, 85]
+    })
+    
+    chart = alt.Chart(growth_data).mark_line(point=True, color='#2E7D32').encode(
+        x='HST',
+        y='Tinggi (cm)',
+        tooltip=['HST', 'Tinggi (cm)']
+    ).properties(title="Grafik Tinggi Tanaman (Petak A)")
+    st.altair_chart(chart, use_container_width=True)
 
-Rekomendasi urutan untuk pengguna baru:
-1. 📋 **RAB Calculator** - Rencanakan budget Anda
-2. 📚 **Panduan Budidaya** - Pelajari teknik budidaya yang benar
-3. 🌾 **Varietas Padi** - Pilih varietas yang sesuai
-4. 🧪 **Kalkulator Pupuk** - Hitung kebutuhan pupuk
-5. 📅 **Kalender Tanam** - Tentukan waktu tanam optimal
-""")
-
-# Quick links
-st.subheader("🔗 Quick Links")
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    if st.button("📋 RAB Calculator", use_container_width=True):
-        st.info("Navigasi ke Pages → 01_💰_RAB_Calculator")
-
-with col2:
-    if st.button("🌾 Varietas Padi", use_container_width=True):
-        st.info("Navigasi ke Pages → 08_🌾_Varietas_Padi")
-
-with col3:
-    if st.button("🔬 PyCaret ML Lab", use_container_width=True):
-        st.info("Navigasi ke Pages → 17_🔬_PyCaret_ML_Lab")
-
-with col4:
-    if st.button("📊 Analytics Hub", use_container_width=True):
-        st.info("Navigasi ke Pages → 19_📊_Analytics_Hub")
-
-st.markdown("---")
+with chart_col2:
+    # Mock Weather Forecast
+    weather_df = pd.DataFrame({
+        'Hari': ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'],
+        'Peluang Hujan (%)': [80, 60, 20, 10, 40],
+        'Suhu (°C)': [27, 28, 30, 31, 29]
+    })
+    
+    bar = alt.Chart(weather_df).mark_bar(color='#90CAF9').encode(
+        x=alt.X('Hari', sort=None),
+        y='Peluang Hujan (%)',
+        tooltip=['Hari', 'Peluang Hujan (%)']
+    ).properties(title="Prakiraan Hujan 5 Hari Kedepan")
+    st.altair_chart(bar, use_container_width=True)
 
 # Footer
-st.markdown("""
-<div style='text-align: center; padding: 2rem; background-color: #F1F8E9; border-radius: 10px; margin-top: 2rem;'>
-    <h3 style='color: #2E7D32; margin: 0;'>🌾 Budidaya Padi</h3>
-    <p style='color: #666; margin: 0.5rem 0;'>Sistem Manajemen Budidaya Padi Terpadu</p>
-    <p style='color: #999; font-size: 0.9rem; margin: 0;'>
-        Powered by Streamlit • Altair • PyCaret • AI/ML
-    </p>
-    <p style='color: #999; font-size: 0.8rem; margin: 0.5rem 0 0 0;'>
-        © 2026 AgriSensa • Version 1.0.0
-    </p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("---")
+st.caption("© 2026 AgriSensa Padi - Sistem Cerdas Sahabat Petani")
