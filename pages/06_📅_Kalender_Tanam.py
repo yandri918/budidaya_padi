@@ -41,6 +41,64 @@ with tab1:
     # Planting calendar
     st.subheader("🗓️ Jadwal Tanam Optimal")
     
+    # --- PRANATA MANGSA LOGIC ---
+    def get_pranata_mangsa(date):
+        day = date.day
+        month = date.month
+        
+        if (month == 6 and day >= 22) or (month == 8 and day <= 1):
+            return "Kasa (I)", "Masa kering, daun gugur, belalang bertelur. Mulai olah tanah kering.", "🌤️ Kering"
+        elif (month == 8 and day >= 2) or (month == 8 and day <= 24):
+            return "Karo (II)", "Tanah merekah, pohon randu bersemi. Persiapan palawija.", "🌤️ Kering/Pancaroba"
+        elif (month == 8 and day >= 25) or (month == 9 and day <= 17):
+            return "Katelu (III)", "Sumur kering, angin kencang. Panen palawija.", "☀️ Kering Panas"
+        elif (month == 9 and day >= 18) or (month == 10 and day <= 13):
+            return "Kapat (IV)", "Mata air mulai basah, hujan pertama (labuh). Persiapan persemaian.", "🌦️ Labuh (Hujan Awal)"
+        elif (month == 10 and day >= 14) or (month == 11 and day <= 8):
+            return "Kalima (V)", "Hujan mulai sering, selokan air mengalir. Waktu Tanam Padi Utama.", "🌧️ Hujan Mulai Stabil"
+        elif (month == 11 and day >= 9) or (month == 12 and day <= 21):
+            return "Kanem (VI)", "Musim buah-buahan. Hujan lebat. Tanam padi terus berlangsung.", "🌧️ Hujan Lebat"
+        elif (month == 12 and day >= 22) or (month == 2 and day <= 2):
+            return "Kapitu (VII)", "Banjir, angin ribut. Puncak musim hujan. Perawatan tanaman.", "⛈️ Puncak Hujan"
+        elif (month == 2 and day >= 3) or (month == 2 and day <= 28): # Simplified Feb
+            return "Kawolu (VIII)", "Padi bunting, ulat banyak. Mulai sedikit panas.", "🌦️ Hujan Berkurang"
+        elif (month == 3 and day >= 1) or (month == 3 and day <= 25):
+            return "Kasanga (IX)", "Bunyi garengpung. Padi mulai tua. Menjelang panen.", "🌤️ Pancaroba Akhir"
+        elif (month == 3 and day >= 26) or (month == 4 and day <= 18):
+            return "Kadasa (X)", "Padi menguning, banyak burung. Panen Raya.", "☀️ Mareng (Kering Awal)"
+        elif (month == 4 and day >= 19) or (month == 5 and day <= 11):
+            return "Desta (XI)", "Suhu dingin di malam hari. Panen palawija.", "☀️ Kering"
+        else: # (month == 5 and day >= 12) or (month == 6 and day <= 21)
+            return "Sada (XII)", "Suhu dingin siang hari. Jemur gabah.", "☀️ Kering Dingin"
+
+    today = datetime.now()
+    mangsa_name, mangsa_desc, mangsa_weather = get_pranata_mangsa(today)
+    
+    # --- PRIMBON LOGIC (Simplified Javanese Market Day) ---
+    # Epoch: 1 Jan 2024 was Monday Pahing
+    # Pasaran: Legi, Pahing, Pon, Wage, Kliwon (5 day cycle)
+    known_date = datetime(2024, 1, 1)
+    delta_days = (today - known_date).days
+    pasaran_list = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"] # Cycle starting from known date
+    today_pasaran = pasaran_list[delta_days % 5]
+    
+    recommendation_primbon = ""
+    if today_pasaran == "Legi": recommendation_primbon = "✅ Baik untuk Tanam (Manis/Subur)"
+    elif today_pasaran == "Wage": recommendation_primbon = "⚠️ Kurang Baik (Kering/Gagal)"
+    else: recommendation_primbon = "⚪ Netral"
+
+    # Display Kearifan Lokal
+    st.markdown("### 🏺 Kearifan Lokal (Pranata Mangsa & Primbon)")
+    col_k1, col_k2 = st.columns(2)
+    with col_k1:
+        st.info(f"**Mangsa Saat Ini:** {mangsa_name}")
+        st.caption(f"{mangsa_desc} ({mangsa_weather})")
+    with col_k2:
+        st.success(f"**Hari Ini:** {today.strftime('%A')}, {today_pasaran}")
+        st.caption(f"Status Primbon Tanam: **{recommendation_primbon}**")
+
+    st.markdown("---")
+    
     if "Teknis" in irrigation:
         st.success("✅ **Irigasi Teknis:** Dapat tanam 2-3x per tahun")
         
