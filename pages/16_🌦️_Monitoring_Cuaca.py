@@ -42,8 +42,8 @@ with col_control:
     
     map_output = st_folium(m, height=250, use_container_width=True)
     
-    # Update lat/lon if map clicked
-    if map_output['last_clicked']:
+    # Update lat/lon if map clicked (Check if not None first!)
+    if map_output and map_output.get('last_clicked'):
         st.session_state.lat = map_output['last_clicked']['lat']
         st.session_state.lon = map_output['last_clicked']['lon']
         
