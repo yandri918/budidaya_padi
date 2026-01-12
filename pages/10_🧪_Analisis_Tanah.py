@@ -23,12 +23,65 @@ with tab1:
     
     with col1:
         st.subheader("1. Status Nitrogen (N)")
-        uji_n = st.selectbox("Warna Bagan Warna Daun (BWD) / Uji Urea", [
-            "Sangat Rendah (BWD < 3 / Pucat)",
-            "Rendah (BWD 3-4 / Hijau Muda)",
-            "Sedang (BWD 4 / Hijau)",
-            "Tinggi (BWD > 4 / Hijau Gelap)"
-        ])
+        
+        tab_n1, tab_n2 = st.tabs(["📸 AI Kamera (BWD)", "manual Input"])
+        
+        bwd_result = "Sedang (BWD 4 / Hijau)" # Default
+        
+        with tab_n1:
+            st.info("💡 Foto daun padi Anda dari jarak dekat (fokus)")
+            uploaded_file = st.file_uploader("Upload Foto Daun", type=['jpg', 'png', 'jpeg'])
+            
+            if uploaded_file is not None:
+                # Import utility dynamically
+                import sys
+                from pathlib import Path
+                parent_dir = str(Path(__file__).parent.parent)
+                if parent_dir not in sys.path:
+                    sys.path.insert(0, parent_dir)
+                    
+                from utils.image_processing import analyze_leaf_color
+                
+                # Analyze image
+                analysis = analyze_leaf_color(uploaded_file)
+                
+                if analysis['status'] == 'success':
+                    score = analysis['bwd_score']
+                    cls = analysis['bwd_class']
+                    rgb = analysis['dominant_color_rgb']
+                    
+                    st.image(uploaded_file, caption=f"Terdeteksi: {cls}", width=200)
+                    st.color_picker("Warna Terdeteksi", f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}", disabled=True)
+                    
+                    if score <= 2.5:
+                        st.error(f"🔴 BWD: {score} (Kekurangan N Parah)")
+                        bwd_result = "Sangat Rendah (BWD < 3 / Pucat)"
+                    elif score <= 3.5:
+                        st.warning(f"🟡 BWD: {score} (Kekurangan N)")
+                        bwd_result = "Rendah (BWD 3-4 / Hijau Muda)"
+                    elif score <= 4.5:
+                        st.success(f"🟢 BWD: {score} (Cukup)")
+                        bwd_result = "Sedang (BWD 4 / Hijau)"
+                    else:
+                        st.info(f"🔵 BWD: {score} (Berlebih)")
+                        bwd_result = "Tinggi (BWD > 4 / Hijau Gelap)"
+                else:
+                    st.error("Gagal menganalisis gambar.")
+
+        with tab_n2:
+            manual_n = st.selectbox("Pilih Manual", [
+                "Sangat Rendah (BWD < 3 / Pucat)",
+                "Rendah (BWD 3-4 / Hijau Muda)",
+                "Sedang (BWD 4 / Hijau)",
+                "Tinggi (BWD > 4 / Hijau Gelap)"
+            ], index=2)
+            
+        # Determine final Uji N source
+        if uploaded_file:
+            uji_n = bwd_result
+        else:
+            uji_n = manual_n
+
         
         st.subheader("2. Status Fosfor (P)")
         uji_p = st.selectbox("Warna Ekstrak P", [
