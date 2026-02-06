@@ -76,6 +76,18 @@ with st.sidebar:
                         pass
             new_num = max(existing_nums) + 1 if existing_nums else 1
             new_scenario_name = f"Skenario {new_num}"
+            
+            # Clear any existing widget states for the new scenario
+            # This ensures fresh default values when switching to new scenario
+            keys_to_clear = [
+                f"luas_{new_scenario_name}", f"lok_{new_scenario_name}", f"var_{new_scenario_name}",
+                f"met_{new_scenario_name}", f"prod_{new_scenario_name}", f"harga_{new_scenario_name}",
+                f"musim_{new_scenario_name}"
+            ]
+            for key in keys_to_clear:
+                if key in st.session_state:
+                    del st.session_state[key]
+            
             st.session_state.active_scenario = new_scenario_name
             # Note: Actual scenario data will be created when user clicks "Hitung RAB"
             st.rerun()
@@ -117,13 +129,32 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(f"<h3>{icon('seedling')} Skenario: {st.session_state.active_scenario}</h3>", unsafe_allow_html=True)
     
+    # Get existing data if scenario already calculated
+    existing_data = st.session_state.scenarios.get(st.session_state.active_scenario, {})
+    
+    # Show status indicator
+    if existing_data:
+        st.success(f"✅ Skenario ini sudah dihitung. Data terakhir: {existing_data.get('calculated_at', 'N/A')}")
+        st.info("💡 Anda bisa mengubah nilai di bawah dan klik 'Hitung RAB' untuk update.")
+    else:
+        st.info("📝 Skenario baru - Silakan isi form di bawah dan klik 'Hitung RAB'")
+    
     # Basic Information
     col1, col2, col3 = st.columns(3)
     
     with col1:
         st.markdown("**📍 Informasi Lahan**")
-        luas_lahan = st.number_input("Luas Lahan (ha)", min_value=0.1, max_value=100.0, value=1.0, step=0.1, key=f"luas_{st.session_state.active_scenario}")
-        lokasi = st.selectbox("Lokasi", ["Jawa Barat", "Jawa Tengah", "Jawa Timur", "Sulawesi Selatan", "Sumatera Utara"], key=f"lok_{st.session_state.active_scenario}")
+        luas_lahan = st.number_input("Luas Lahan (ha)", 
+                                     min_value=0.1, max_value=100.0, 
+                                     value=existing_data.get('luas_lahan', 1.0), 
+                                     step=0.1, 
+                                     key=f"luas_{st.session_state.active_scenario}")
+        
+        lokasi_options = ["Jawa Barat", "Jawa Tengah", "Jawa Timur", "Sulawesi Selatan", "Sumatera Utara"]
+        default_lokasi_idx = lokasi_options.index(existing_data['lokasi']) if 'lokasi' in existing_data else 0
+        lokasi = st.selectbox("Lokasi", lokasi_options, 
+                             index=default_lokasi_idx,
+                             key=f"lok_{st.session_state.active_scenario}")
     
     with col2:
         st.markdown("**🌾 Varietas & Metode**")
