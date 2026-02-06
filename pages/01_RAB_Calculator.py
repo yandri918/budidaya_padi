@@ -64,8 +64,8 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # Add new scenario section
-    st.markdown("**➕ Buat Skenario Baru**")
+    # Add new scenario section with better visibility
+    st.markdown(f"<h4>{icon('plus-circle')} Buat Skenario Baru</h4>", unsafe_allow_html=True)
     
     # Auto-generate next scenario number as default
     existing_nums = []
@@ -78,25 +78,25 @@ with st.sidebar:
                 pass
     next_num = max(existing_nums) + 1 if existing_nums else 1
     
-    col_input, col_btn = st.columns([3, 1])
-    with col_input:
-        new_scenario_name = st.text_input(
-            "Nama Skenario Baru", 
-            value=f"Skenario {next_num}",
-            placeholder="Masukkan nama...",
-            label_visibility="collapsed",
-            key="new_scenario_input"
-        )
-    with col_btn:
-        if st.button("✅ Buat", use_container_width=True, key="create_scenario_btn"):
-            if not new_scenario_name or new_scenario_name.strip() == "":
-                st.error("Nama skenario tidak boleh kosong!")
-            elif new_scenario_name in all_scenario_names:
-                st.error(f"Skenario '{new_scenario_name}' sudah ada!")
-            else:
-                st.session_state.active_scenario = new_scenario_name
-                st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
-                st.rerun()
+    # Input field for new scenario name
+    new_scenario_name = st.text_input(
+        "Nama Skenario Baru", 
+        value=f"Skenario {next_num}",
+        placeholder="Contoh: Organik MT1, Konvensional Lahan A",
+        help="Masukkan nama untuk skenario baru, lalu klik tombol Buat",
+        key="new_scenario_input"
+    )
+    
+    # Create button
+    if st.button("✅ Buat Skenario", use_container_width=True, type="primary", key="create_scenario_btn"):
+        if not new_scenario_name or new_scenario_name.strip() == "":
+            st.error("❌ Nama skenario tidak boleh kosong!")
+        elif new_scenario_name in all_scenario_names:
+            st.error(f"❌ Skenario '{new_scenario_name}' sudah ada!")
+        else:
+            st.session_state.active_scenario = new_scenario_name
+            st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
+            st.rerun()
     
     st.markdown("---")
     
