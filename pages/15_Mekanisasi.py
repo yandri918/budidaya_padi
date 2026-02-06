@@ -12,7 +12,7 @@ st.set_page_config(page_title="Mekanisasi", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('tractor', size='lg')} Mekanisasi")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('tractor', size='lg')} Mekanisasi</h1>", unsafe_allow_html=True)
 st.markdown("**Manajemen Alat Mesin Pertanian (Traktor, Transplanter, Combine Harvester)**")
 st.markdown("---")
 

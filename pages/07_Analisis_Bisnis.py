@@ -13,7 +13,7 @@ st.set_page_config(page_title="Analisis Bisnis", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('chart-line', size='lg')} Analisis Bisnis")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('chart-line', size='lg')} Analisis Bisnis</h1>", unsafe_allow_html=True)
 st.markdown("**Analisis kelayakan usaha dan profitabilitas**")
 st.markdown("---")
 

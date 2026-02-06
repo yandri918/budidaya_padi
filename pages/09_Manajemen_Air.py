@@ -12,7 +12,7 @@ st.set_page_config(page_title="Manajemen Air", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('tint', size='lg')} Manajemen Air")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('tint', size='lg')} Manajemen Air</h1>", unsafe_allow_html=True)
 st.markdown("**Pengelolaan air irigasi padi sawah (System of Rice Intensification / AWD)**")
 st.markdown("---")
 

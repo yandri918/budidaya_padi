@@ -22,7 +22,7 @@ st.set_page_config(page_title="Hama & Penyakit", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('bug', size='lg')} Hama & Penyakit")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('bug', size='lg')} Hama & Penyakit</h1>", unsafe_allow_html=True)
 st.markdown("**Database lengkap hama dan penyakit padi dengan cara pengendalian**")
 st.markdown("---")
 

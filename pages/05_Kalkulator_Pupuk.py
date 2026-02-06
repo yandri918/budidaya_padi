@@ -12,7 +12,7 @@ st.set_page_config(page_title="Kalkulator Pupuk", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('flask', size='lg')} Kalkulator Pupuk")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('flask', size='lg')} Kalkulator Pupuk</h1>", unsafe_allow_html=True)
 st.markdown("**Hitung kebutuhan pupuk optimal untuk budidaya padi**")
 st.markdown("---")
 

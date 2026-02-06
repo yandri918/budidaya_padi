@@ -22,7 +22,7 @@ st.set_page_config(page_title="Cuaca Lahan", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('cloud-sun', size='lg')} Monitoring Cuaca")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('cloud-sun', size='lg')} Monitoring Cuaca</h1>", unsafe_allow_html=True)
 st.markdown("**Data cuaca presisi (Suhu, Hujan, Angin) untuk keputusan budidaya yang akurat**")
 st.markdown("---")
 

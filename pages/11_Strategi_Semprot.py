@@ -11,7 +11,7 @@ st.set_page_config(page_title="Strategi Semprot", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('spray-can', size='lg')} Strategi Semprot")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('spray-can', size='lg')} Strategi Semprot</h1>", unsafe_allow_html=True)
 st.markdown("**Panduan teknis aplikasi pestisida, kalkulator dosis, dan manajemen resistensi**")
 st.markdown("---")
 

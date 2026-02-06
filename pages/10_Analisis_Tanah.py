@@ -12,7 +12,7 @@ st.set_page_config(page_title="Analisis Tanah", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('vial', size='lg')} Analisis Tanah")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('vial', size='lg')} Analisis Tanah</h1>", unsafe_allow_html=True)
 st.markdown("**Interpretasi hasil PUTS (Perangkat Uji Tanah Sawah) dan rekomendasi spesifik lokasi**")
 st.markdown("---")
 

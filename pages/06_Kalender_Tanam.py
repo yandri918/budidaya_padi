@@ -13,7 +13,7 @@ st.set_page_config(page_title="Kalender Tanam", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('calendar-alt', size='lg')} Kalender Tanam")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('calendar-alt', size='lg')} Kalender Tanam</h1>", unsafe_allow_html=True)
 st.markdown("**Rekomendasi waktu tanam berdasarkan musim dan pola hujan**")
 st.markdown("---")
 

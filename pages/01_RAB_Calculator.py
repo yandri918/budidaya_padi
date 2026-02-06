@@ -27,7 +27,7 @@ st.set_page_config(
 apply_design_system()
 
 # Header
-st.title(f"{icon('calculator', size='lg')} RAB Calculator")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('calculator', size='lg')} RAB Calculator</h1>", unsafe_allow_html=True)
 st.markdown("**Hitung Rencana Anggaran Biaya budidaya padi secara detail**")
 st.markdown("---")
 

@@ -27,7 +27,7 @@ st.set_page_config(
 apply_design_system()
 
 # Header
-st.title(f"{icon('book-open', size='lg')} Panduan Budidaya")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('book-open', size='lg')} Panduan Budidaya</h1>", unsafe_allow_html=True)
 st.markdown("**Panduan lengkap budidaya padi dari persiapan hingga panen**")
 st.markdown("---")
 

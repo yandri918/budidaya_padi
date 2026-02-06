@@ -28,7 +28,7 @@ st.set_page_config(
 apply_design_system()
 
 # Header
-st.title(f"{icon('seedling', size='lg')} Varietas Padi")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('seedling', size='lg')} Varietas Padi</h1>", unsafe_allow_html=True)
 st.markdown("**Database lengkap varietas padi unggul untuk kondisi Indonesia**")
 st.markdown("---")
 

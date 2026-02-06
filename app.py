@@ -102,7 +102,7 @@ with col_alert:
     """, unsafe_allow_html=True)
     
     # Financial Summary (Mock from Logbook)
-    st.markdown(f"### {icon('money')} Status Keuangan Bulan Ini")
+    st.markdown(f"<h3>{icon('money')} Status Keuangan Bulan Ini</h3>", unsafe_allow_html=True)
     f_col1, f_col2, f_col3 = st.columns(3)
     f_col1.metric("Pengeluaran", "Rp 1.500.000", "Pupuk & Upah")
     f_col2.metric("Pemasukan (Est)", "Rp 0", "-")
@@ -119,7 +119,7 @@ with col_market:
     beras_arrow = "▲" if beras['change'] >= 0 else "▼"
     beras_color = "green" if beras['change'] >= 0 else "red"
     
-    st.markdown(f"### {icon('chart-line')} Harga Pasar (Live)")
+    st.markdown(f"<h3>{icon('chart-line')} Harga Pasar (Live)</h3>", unsafe_allow_html=True)
     st.markdown(f"""
     <div class='price-ticker'>
         {icon('seedling')} GKP (Gabah Kering Panen)<br>
@@ -136,7 +136,7 @@ with col_market:
 
 # 3. Quick Actions Grid
 st.markdown("---")
-st.header(f"{icon('rocket')} Menu Cepat (Quick Actions)")
+st.markdown(f"<h2>{icon('rocket')} Menu Cepat (Quick Actions)</h2>", unsafe_allow_html=True)
 
 c1, c2, c3, c4 = st.columns(4)
 
@@ -154,7 +154,7 @@ with c4:
 
 # 4. Chart Visualization (Mini Dashboard)
 st.markdown("---")
-st.header(f"{icon('chart-bar')} Tren Pertumbuhan & Cuaca")
+st.markdown(f"<h2>{icon('chart-bar')} Tren Pertumbuhan & Cuaca</h2>", unsafe_allow_html=True)
 
 chart_col1, chart_col2 = st.columns(2)
 

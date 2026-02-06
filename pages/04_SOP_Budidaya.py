@@ -11,7 +11,7 @@ st.set_page_config(page_title="SOP Budidaya", page_icon="", layout="wide")
 # Apply Design System
 apply_design_system()
 
-st.title(f"{icon('clipboard-list', size='lg')} SOP Budidaya")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('clipboard-list', size='lg')} SOP Budidaya</h1>", unsafe_allow_html=True)
 st.markdown("**Standard Operating Procedure lengkap budidaya padi**")
 st.markdown("---")
 
