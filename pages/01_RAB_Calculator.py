@@ -45,7 +45,7 @@ if 'active_scenario' not in st.session_state:
 
 # Sidebar for scenario management
 with st.sidebar:
-    st.markdown(f"### {icon('folder')} Manajemen Skenario")
+    st.markdown(f"<h3>{icon('folder')} Manajemen Skenario</h3>", unsafe_allow_html=True)
     
     # Scenario selector
     scenario_names = list(st.session_state.scenarios.keys()) if st.session_state.scenarios else ["Skenario 1"]
@@ -67,15 +67,15 @@ with st.sidebar:
                 st.rerun()
     
     st.markdown("---")
-    st.markdown(f"### {icon('cog')} Mode Input")
+    st.markdown(f"<h3>{icon('cog')} Mode Input</h3>", unsafe_allow_html=True)
     input_mode = st.radio("", ["Simple", "Detail"], horizontal=True)
 
 # Main tabs
 tab1, tab2, tab3, tab4 = st.tabs([
-    f"{icon('edit')} Input Data",
-    f"{icon('chart-bar')} Hasil RAB",
-    f"{icon('chart-line')} Analisis",
-    f"{icon('download')} Export"
+    "📝 Input Data",
+    "📊 Hasil RAB",
+    "📈 Analisis",
+    "💾 Export"
 ])
 
 # ==================== TAB 1: INPUT DATA ====================
@@ -290,7 +290,7 @@ with tab1:
 # ==================== TAB 2: HASIL RAB ====================
 with tab2:
     if not st.session_state.scenarios:
-        st.info(f"{icon('info')} Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
+        st.info("ℹ️ Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
     else:
         data = st.session_state.scenarios.get(st.session_state.active_scenario)
         
@@ -396,7 +396,7 @@ with tab2:
 # ==================== TAB 3: ANALISIS ====================
 with tab3:
     if len(st.session_state.scenarios) < 1:
-        st.info(f"{icon('info')} Buat minimal 1 skenario untuk melihat analisis")
+        st.info("ℹ️ Buat minimal 1 skenario untuk melihat analisis")
     else:
         st.markdown(f"<h3>{icon('chart-line')} Analisis Komparatif</h3>", unsafe_allow_html=True)
         
@@ -577,7 +577,7 @@ with tab4:
             with col1:
                 csv = export_df.to_csv(index=False).encode('utf-8')
                 st.download_button(
-                    label=f"{icon('file')} Download CSV",
+                    label="📄 Download CSV",
                     data=csv,
                     file_name=f"RAB_Padi_{datetime.now().strftime('%Y%m%d')}.csv",
                     mime="text/csv",
@@ -593,7 +593,7 @@ with tab4:
                         export_df.to_excel(writer, sheet_name='RAB Summary', index=False)
                     
                     st.download_button(
-                        label=f"{icon('file')} Download Excel",
+                        label="📄 Download Excel",
                         data=buffer.getvalue(),
                         file_name=f"RAB_Padi_{datetime.now().strftime('%Y%m%d')}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -603,9 +603,9 @@ with tab4:
                     st.info("Install openpyxl untuk export Excel")
             
             with col3:
-                st.button(f"{icon('print')} Print Preview", use_container_width=True, disabled=True)
+                st.button("🖨️ Print Preview", use_container_width=True, disabled=True)
                 st.caption("Coming soon")
 
 # Footer
 st.markdown("---")
-st.caption(f"{icon('info')} **Tips:** Gunakan mode Detail untuk breakdown biaya yang lebih akurat. Bandingkan beberapa skenario untuk keputusan terbaik.")
+st.caption("ℹ️ **Tips:** Gunakan mode Detail untuk breakdown biaya yang lebih akurat. Bandingkan beberapa skenario untuk keputusan terbaik.")
