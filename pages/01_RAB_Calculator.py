@@ -218,7 +218,7 @@ with tab1:
     
     # Calculate button
     st.markdown("---")
-    if st.button(f"{icon('calculator')} Hitung RAB", type="primary", use_container_width=True):
+    if st.button("🧮 Hitung RAB", type="primary", use_container_width=True):
         # Calculate totals
         total_biaya_per_ha = total_persiapan + total_pupuk + total_pestisida + total_tenaga_kerja + total_lainnya
         total_biaya = total_biaya_per_ha * luas_lahan
