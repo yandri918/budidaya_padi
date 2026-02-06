@@ -6,6 +6,19 @@ Complete SOP for rice cultivation from land preparation to harvest
 import streamlit as st
 import pandas as pd
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from utils.design_system import apply_design_system, icon, COLORS
+except ImportError:
+    # Fallback for different directory structures
+    sys.path.insert(0, str(Path(__file__).parent.parent / "utils"))
+    from design_system import apply_design_system, icon, COLORS
+
 st.set_page_config(page_title="SOP Budidaya", page_icon="", layout="wide")
 
 # Apply Design System

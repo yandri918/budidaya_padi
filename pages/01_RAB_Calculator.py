@@ -10,11 +10,15 @@ import altair as alt
 import sys
 from pathlib import Path
 
-# Add utils to path
-if str(Path(__file__).parent.parent / "utils") not in sys.path:
-    sys.path.append(str(Path(__file__).parent.parent / "utils"))
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from design_system import apply_design_system, icon, COLORS
+try:
+    from utils.design_system import apply_design_system, icon, COLORS
+except ImportError:
+    # Fallback for different directory structures
+    sys.path.insert(0, str(Path(__file__).parent.parent / "utils"))
+    from design_system import apply_design_system, icon, COLORS
 
 # Page config
 st.set_page_config(

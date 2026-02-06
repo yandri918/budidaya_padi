@@ -12,11 +12,14 @@ import random
 import sys
 from pathlib import Path
 
-# Add utils to path for design system
-if str(Path(__file__).parent / 'utils') not in sys.path:
-    sys.path.append(str(Path(__file__).parent / 'utils'))
+# Add utils to path
+sys.path.insert(0, str(Path(__file__).parent))
 
-from design_system import apply_design_system, icon, COLORS, ICONS
+try:
+    from utils.design_system import apply_design_system, icon, COLORS, ICONS
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent / "utils"))
+    from design_system import apply_design_system, icon, COLORS, ICONS
 
 # Page config
 st.set_page_config(
