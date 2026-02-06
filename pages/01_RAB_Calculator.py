@@ -124,9 +124,35 @@ with st.sidebar:
     
     if selected_template != "-- Pilih Template --":
         if st.button("📥 Terapkan Template", use_container_width=True):
-            st.session_state.loaded_template = templates[selected_template]
-            st.success(f"Template '{selected_template}' siap diterapkan!")
-            st.info("Isi form di tab Input Data akan otomatis terisi")
+            tpl = templates[selected_template]
+            act = st.session_state.active_scenario
+            costs = tpl.get('costs_per_ha', {})
+            
+            # Direct injection into widget states
+            # This forces the UI to update immediately
+            st.session_state[f"prod_{act}"] = float(tpl.get('target_produksi', 6.0))
+            st.session_state[f"met_{act}"] = tpl.get('metode_tanam', "Transplanting (Pindah Tanam)")
+            
+            # Cost mappings
+            st.session_state[f"olah_{act}"] = int(costs.get('persiapan_lahan', 2000000))
+            st.session_state[f"bibit_{act}"] = int(costs.get('bibit', 1500000))
+            st.session_state[f"urea_{act}"] = int(costs.get('pupuk_subsidi', 2000000) * 0.4)
+            st.session_state[f"npk_{act}"] = int(costs.get('pupuk_subsidi', 2000000) * 0.6)
+            st.session_state[f"org_{act}"] = int(costs.get('pupuk_organik', 800000))
+            st.session_state[f"pest_{act}"] = int(costs.get('pestisida', 1000000))
+            st.session_state[f"herb_{act}"] = 500000 # Default
+            st.session_state[f"tanam_{act}"] = int(costs.get('tenaga_kerja', 4000000) * 0.3)
+            st.session_state[f"rawat_{act}"] = int(costs.get('tenaga_kerja', 4000000) * 0.3)
+            st.session_state[f"panen_{act}"] = int(costs.get('panen_pasca', 3000000))
+            st.session_state[f"sewa_{act}"] = int(costs.get('lainnya', 500000))
+            st.session_state[f"lain_{act}"] = int(costs.get('lainnya', 500000))
+            
+            # Clear loaded_template flag if it exists to avoid confusion
+            if 'loaded_template' in st.session_state:
+                del st.session_state['loaded_template']
+
+            st.success(f"✅ Template '{selected_template}' berhasil diterapkan!")
+            st.rerun()
 
 
 # Main tabs
@@ -141,56 +167,18 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(f"<h3>{icon('seedling')} Skenario: {st.session_state.active_scenario}</h3>", unsafe_allow_html=True)
     
-    # Logic Prioritas Data:
-    # 1. Existing Data (skenario sudah dihitung & tersimpan)
-    # 2. Loaded Template (baru saja di-load dari sidebar)
-    # 3. Default Values (kosong/standar)
-    
+    # Get existing data if scenario already calculated
     existing_data = st.session_state.scenarios.get(st.session_state.active_scenario, {})
-    loaded_tpl = st.session_state.get('loaded_template', None)
     
-    # Determine source of data for default values
-    # If template is loaded, use it. But if existing data is present, it usually takes precedence 
-    # UNLESS the user explicitly just clicked "Apply Template".
-    # Since we can't easily track "just clicked", we'll check if loaded_tpl exists. 
-    # Ideally, we should clear loaded_template after using it once to avoid it sticking forever.
-    
-    current_defaults = {}
-    
-    if loaded_tpl:
-        # Use template data
-        current_defaults = {
-            'target_produksi': loaded_tpl.get('target_produksi', 6.0),
-            'metode_tanam': loaded_tpl.get('metode_tanam', "Transplanting (Pindah Tanam)"),
-            # Map costs from template structure
-            'biaya_persiapan': loaded_tpl.get('costs_per_ha', {}).get('persiapan_lahan', 0),
-            'biaya_bibit': loaded_tpl.get('costs_per_ha', {}).get('bibit', 0),
-            # ... and so on for other costs. 
-            # Note: Templates currently structued differently than flat input fields?
-            # Let's check template structure in rab_templates.py again to be sure.
-        }
-        st.info(f"📋 Menggunakan data dari template: **{loaded_tpl.get('description', 'Custom Template')}**")
-        
-        # IMPORTANT: We should use existing_data if available, UNLESS template was just loaded?
-        # A safer approach: If loaded_template exists, show a button "Apply to Inputs" or apply immediately?
-        # The sidebar button ALREADY said "Apply". So we should use it.
-        # But we must act carefully not to overwrite existing saved scenario data unexpectedly.
-        
-    elif existing_data:
-         st.success(f"✅ Data tersimpan dari perhitungan terakhir ({existing_data.get('calculated_at', 'N/A')})")
+    if existing_data:
+         st.success(f"✅ Data tersimpan (Update terakhir: {existing_data.get('calculated_at', 'N/A')})")
     else:
-        st.info("📝 Skenario baru - Silakan isi form di bawah")
+        st.info("📝 Skenario baru - Silakan isi form atau pilih Template di sidebar")
 
-    # Helper function to get value safely
+    # Helper function to get value safely from existing data or return default
     def get_val(key, default):
-        # Priority 1: Check existing saved data
         if existing_data and key in existing_data:
             return existing_data[key]
-        # Priority 2: Check loaded template (if mapped correctly)
-        if loaded_tpl:
-            # We need to map the flat key to template structure if needed
-            # Or assume loaded_tpl has flat structure?
-            return loaded_tpl.get(key, default)
         return default
     
     # Basic Information
