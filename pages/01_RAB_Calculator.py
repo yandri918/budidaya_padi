@@ -62,10 +62,10 @@ with st.sidebar:
                                      key="scenario_selector")
     st.session_state.active_scenario = selected_scenario
     
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
-        if st.button("➕ Baru", use_container_width=True):
-            # Find next available scenario number
+    # Add new scenario with form (no auto-refresh)
+    with st.expander("➕ Buat Skenario Baru"):
+        with st.form("new_scenario_form"):
+            # Auto-generate next scenario number as default
             existing_nums = []
             for name in st.session_state.scenarios.keys():
                 if name.startswith("Skenario "):
@@ -74,26 +74,32 @@ with st.sidebar:
                         existing_nums.append(num)
                     except:
                         pass
-            new_num = max(existing_nums) + 1 if existing_nums else 1
-            new_scenario_name = f"Skenario {new_num}"
+            next_num = max(existing_nums) + 1 if existing_nums else 1
             
-            # Clear any existing widget states for the new scenario
-            # This ensures fresh default values when switching to new scenario
-            keys_to_clear = [
-                f"luas_{new_scenario_name}", f"lok_{new_scenario_name}", f"var_{new_scenario_name}",
-                f"met_{new_scenario_name}", f"prod_{new_scenario_name}", f"harga_{new_scenario_name}",
-                f"musim_{new_scenario_name}"
-            ]
-            for key in keys_to_clear:
-                if key in st.session_state:
-                    del st.session_state[key]
+            new_scenario_name = st.text_input(
+                "Nama Skenario", 
+                value=f"Skenario {next_num}",
+                placeholder="Masukkan nama skenario..."
+            )
             
+            col1, col2 = st.columns(2)
+            with col1:
+                submitted = st.form_submit_button("✅ Buat", use_container_width=True)
+            with col2:
+                st.form_submit_button("❌ Batal", use_container_width=True)
             
-            st.session_state.active_scenario = new_scenario_name
-            st.rerun()  # Refresh to update dropdown and reset form
+            if submitted and new_scenario_name:
+                if new_scenario_name in st.session_state.scenarios:
+                    st.error(f"Skenario '{new_scenario_name}' sudah ada!")
+                else:
+                    st.session_state.active_scenario = new_scenario_name
+                    st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
+                    st.rerun()
     
-    with col_btn2:
-        if st.button("🗑️ Hapus", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
+    # Delete scenario button
+    col_del = st.columns(1)[0]
+    with col_del:
+        if st.button("🗑️ Hapus Skenario", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
             if st.session_state.active_scenario in st.session_state.scenarios:
                 del st.session_state.scenarios[st.session_state.active_scenario]
                 st.session_state.active_scenario = list(st.session_state.scenarios.keys())[0] if st.session_state.scenarios else "Skenario 1"
