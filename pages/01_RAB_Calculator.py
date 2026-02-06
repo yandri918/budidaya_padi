@@ -62,48 +62,50 @@ with st.sidebar:
                                      key="scenario_selector")
     st.session_state.active_scenario = selected_scenario
     
-    # Add new scenario with form (no auto-refresh)
-    with st.expander("➕ Buat Skenario Baru"):
-        with st.form("new_scenario_form"):
-            # Auto-generate next scenario number as default
-            existing_nums = []
-            for name in st.session_state.scenarios.keys():
-                if name.startswith("Skenario "):
-                    try:
-                        num = int(name.split(" ")[1])
-                        existing_nums.append(num)
-                    except:
-                        pass
-            next_num = max(existing_nums) + 1 if existing_nums else 1
-            
-            new_scenario_name = st.text_input(
-                "Nama Skenario", 
-                value=f"Skenario {next_num}",
-                placeholder="Masukkan nama skenario..."
-            )
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                submitted = st.form_submit_button("✅ Buat", use_container_width=True)
-            with col2:
-                st.form_submit_button("❌ Batal", use_container_width=True)
-            
-            if submitted and new_scenario_name:
-                if new_scenario_name in st.session_state.scenarios:
-                    st.error(f"Skenario '{new_scenario_name}' sudah ada!")
-                else:
-                    st.session_state.active_scenario = new_scenario_name
-                    st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
-                    st.rerun()
+    st.markdown("---")
+    
+    # Add new scenario section
+    st.markdown("**➕ Buat Skenario Baru**")
+    
+    # Auto-generate next scenario number as default
+    existing_nums = []
+    for name in st.session_state.scenarios.keys():
+        if name.startswith("Skenario "):
+            try:
+                num = int(name.split(" ")[1])
+                existing_nums.append(num)
+            except:
+                pass
+    next_num = max(existing_nums) + 1 if existing_nums else 1
+    
+    col_input, col_btn = st.columns([3, 1])
+    with col_input:
+        new_scenario_name = st.text_input(
+            "Nama Skenario Baru", 
+            value=f"Skenario {next_num}",
+            placeholder="Masukkan nama...",
+            label_visibility="collapsed",
+            key="new_scenario_input"
+        )
+    with col_btn:
+        if st.button("✅ Buat", use_container_width=True, key="create_scenario_btn"):
+            if not new_scenario_name or new_scenario_name.strip() == "":
+                st.error("Nama skenario tidak boleh kosong!")
+            elif new_scenario_name in all_scenario_names:
+                st.error(f"Skenario '{new_scenario_name}' sudah ada!")
+            else:
+                st.session_state.active_scenario = new_scenario_name
+                st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
+                st.rerun()
+    
+    st.markdown("---")
     
     # Delete scenario button
-    col_del = st.columns(1)[0]
-    with col_del:
-        if st.button("🗑️ Hapus Skenario", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
-            if st.session_state.active_scenario in st.session_state.scenarios:
-                del st.session_state.scenarios[st.session_state.active_scenario]
-                st.session_state.active_scenario = list(st.session_state.scenarios.keys())[0] if st.session_state.scenarios else "Skenario 1"
-                st.rerun()
+    if st.button("🗑️ Hapus Skenario Aktif", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
+        if st.session_state.active_scenario in st.session_state.scenarios:
+            del st.session_state.scenarios[st.session_state.active_scenario]
+            st.session_state.active_scenario = list(st.session_state.scenarios.keys())[0] if st.session_state.scenarios else "Skenario 1"
+            st.rerun()
     
     st.markdown("---")
     st.markdown(f"<h3>{icon('cog')} Mode Input</h3>", unsafe_allow_html=True)
