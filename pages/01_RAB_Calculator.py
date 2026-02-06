@@ -88,9 +88,9 @@ with st.sidebar:
                 if key in st.session_state:
                     del st.session_state[key]
             
+            
             st.session_state.active_scenario = new_scenario_name
-            # Note: Actual scenario data will be created when user clicks "Hitung RAB"
-            st.rerun()
+            st.rerun()  # Refresh to update dropdown and reset form
     
     with col_btn2:
         if st.button("🗑️ Hapus", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
