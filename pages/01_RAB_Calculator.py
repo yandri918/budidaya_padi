@@ -17,10 +17,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 try:
     from utils.design_system import apply_design_system, icon, COLORS
+    from utils.rab_templates import get_all_templates, get_template, REGIONAL_BENCHMARKS, calculate_efficiency_score
 except ImportError:
     # Fallback for different directory structures
     sys.path.insert(0, str(Path(__file__).parent.parent / "utils"))
     from design_system import apply_design_system, icon, COLORS
+    from rab_templates import get_all_templates, get_template, REGIONAL_BENCHMARKS, calculate_efficiency_score
 
 # Page config
 st.set_page_config(
@@ -69,6 +71,20 @@ with st.sidebar:
     st.markdown("---")
     st.markdown(f"<h3>{icon('cog')} Mode Input</h3>", unsafe_allow_html=True)
     input_mode = st.radio("", ["Simple", "Detail"], horizontal=True)
+    
+    # Template loader
+    st.markdown("---")
+    st.markdown(f"<h3>{icon('bookmark')} Template</h3>", unsafe_allow_html=True)
+    templates = get_all_templates()
+    template_names = ["-- Pilih Template --"] + list(templates.keys())
+    selected_template = st.selectbox("Load Template", template_names, key="template_selector")
+    
+    if selected_template != "-- Pilih Template --":
+        if st.button("📥 Terapkan Template", use_container_width=True):
+            st.session_state.loaded_template = templates[selected_template]
+            st.success(f"Template '{selected_template}' siap diterapkan!")
+            st.info("Isi form di tab Input Data akan otomatis terisi")
+
 
 # Main tabs
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -529,6 +545,126 @@ with tab3:
                     tooltip=[alt.Tooltip('Produktivitas (ton/ha):Q', format='.1f'), alt.Tooltip('Keuntungan:Q', format=',.0f')]
                 ).properties(height=250)
                 st.altair_chart(prod_chart, use_container_width=True)
+        
+        # Cost Structure Analysis
+        if st.session_state.active_scenario in st.session_state.scenarios:
+            st.markdown("---")
+            st.markdown(f"<h4>{icon('chart-pie')} Analisis Struktur Biaya - {st.session_state.active_scenario}</h4>", unsafe_allow_html=True)
+            
+            data = st.session_state.scenarios[st.session_state.active_scenario]
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Klasifikasi Biaya**")
+                
+                # Fixed vs Variable costs estimation
+                fixed_costs = data['total_persiapan'] + (data['total_lainnya'] * 0.5)
+                variable_costs = data['total_pupuk'] + data['total_pestisida'] + data['total_tenaga_kerja'] + (data['total_lainnya'] * 0.5)
+                
+                cost_class_df = pd.DataFrame({
+                    'Kategori': ['Biaya Tetap', 'Biaya Variabel'],
+                    'Nilai': [fixed_costs, variable_costs],
+                    'Persentase': [
+                        fixed_costs / data['total_biaya'] * 100,
+                        variable_costs / data['total_biaya'] * 100
+                    ]
+                })
+                
+                st.dataframe(
+                    cost_class_df.style.format({
+                        'Nilai': 'Rp {:,.0f}',
+                        'Persentase': '{:.1f}%'
+                    }),
+                    use_container_width=True,
+                    hide_index=True
+                )
+                
+                st.metric("Rasio Biaya Tetap", f"{fixed_costs/data['total_biaya']*100:.1f}%")
+                st.metric("Biaya Variabel per kg", f"Rp {variable_costs/data['total_produksi_kg']:,.0f}")
+            
+            with col2:
+                st.markdown("**Efisiensi Biaya**")
+                
+                # Cost efficiency metrics
+                metrics_df = pd.DataFrame({
+                    'Metrik': [
+                        'Biaya per Hektar',
+                        'Biaya per Kilogram',
+                        'Biaya per Ton',
+                        'Produktivitas Modal'
+                    ],
+                    'Nilai': [
+                        f"Rp {data['biaya_per_ha']:,.0f}",
+                        f"Rp {data['biaya_per_kg']:,.0f}",
+                        f"Rp {data['biaya_per_kg']*1000:,.0f}",
+                        f"{data['total_produksi_kg']/data['total_biaya']*1000:.2f} kg/juta"
+                    ]
+                })
+                
+                st.dataframe(metrics_df, use_container_width=True, hide_index=True)
+                
+                # Marginal analysis
+                if data['luas_lahan'] > 0:
+                    marginal_cost = data['total_biaya'] / data['luas_lahan']
+                    marginal_revenue = data['total_pendapatan'] / data['luas_lahan']
+                    st.metric("Margin Kontribusi per ha", f"Rp {marginal_revenue - marginal_cost:,.0f}")
+        
+        # Benchmark Comparison
+        if st.session_state.active_scenario in st.session_state.scenarios:
+            st.markdown("---")
+            st.markdown(f"<h4>{icon('trophy')} Perbandingan dengan Benchmark Regional</h4>", unsafe_allow_html=True)
+            
+            data = st.session_state.scenarios[st.session_state.active_scenario]
+            benchmark = REGIONAL_BENCHMARKS.get(data['lokasi'], REGIONAL_BENCHMARKS['Jawa Barat'])
+            
+            # Calculate efficiency scores
+            scores = calculate_efficiency_score(data, benchmark)
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                score_color = "🟢" if scores['cost_efficiency'] >= 70 else "🟡" if scores['cost_efficiency'] >= 50 else "🔴"
+                st.metric("Efisiensi Biaya", f"{scores['cost_efficiency']:.0f}/100", score_color)
+            
+            with col2:
+                score_color = "🟢" if scores['productivity_efficiency'] >= 70 else "🟡" if scores['productivity_efficiency'] >= 50 else "🔴"
+                st.metric("Efisiensi Produktivitas", f"{scores['productivity_efficiency']:.0f}/100", score_color)
+            
+            with col3:
+                score_color = "🟢" if scores['roi_efficiency'] >= 70 else "🟡" if scores['roi_efficiency'] >= 50 else "🔴"
+                st.metric("Efisiensi ROI", f"{scores['roi_efficiency']:.0f}/100", score_color)
+            
+            with col4:
+                score_color = "🟢" if scores['overall'] >= 70 else "🟡" if scores['overall'] >= 50 else "🔴"
+                st.metric("Skor Keseluruhan", f"{scores['overall']:.0f}/100", score_color)
+            
+            # Comparison table
+            st.markdown("**Perbandingan Detail**")
+            comparison_df = pd.DataFrame({
+                'Indikator': ['Biaya per ha', 'Produktivitas', 'Biaya per kg', 'ROI'],
+                'Anda': [
+                    f"Rp {data['biaya_per_ha']:,.0f}",
+                    f"{data['target_produksi']:.1f} ton/ha",
+                    f"Rp {data['biaya_per_kg']:,.0f}",
+                    f"{data['roi']:.1f}%"
+                ],
+                'Rata-rata Regional': [
+                    f"Rp {benchmark['avg_cost_per_ha']:,.0f}",
+                    f"{benchmark['avg_productivity']:.1f} ton/ha",
+                    f"Rp {benchmark['avg_cost_per_kg']:,.0f}",
+                    f"{benchmark['avg_roi']:.0f}%"
+                ],
+                'Status': [
+                    "✅ Lebih Rendah" if data['biaya_per_ha'] < benchmark['avg_cost_per_ha'] else "⚠️ Lebih Tinggi",
+                    "✅ Lebih Tinggi" if data['target_produksi'] > benchmark['avg_productivity'] else "⚠️ Lebih Rendah",
+                    "✅ Lebih Rendah" if data['biaya_per_kg'] < benchmark['avg_cost_per_kg'] else "⚠️ Lebih Tinggi",
+                    "✅ Lebih Tinggi" if data['roi'] > benchmark['avg_roi'] else "⚠️ Lebih Rendah"
+                ]
+            })
+            
+            st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+
 
 # ==================== TAB 4: EXPORT ====================
 with tab4:
