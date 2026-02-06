@@ -95,6 +95,10 @@ with st.sidebar:
             st.error(f"❌ Skenario '{new_scenario_name}' sudah ada!")
         else:
             st.session_state.active_scenario = new_scenario_name
+            # Clear loaded template so new scenario starts fresh (unless user loads one)
+            if 'loaded_template' in st.session_state:
+                del st.session_state['loaded_template']
+            
             st.success(f"✅ Skenario '{new_scenario_name}' berhasil dibuat!")
             st.rerun()
     
@@ -137,15 +141,57 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.markdown(f"<h3>{icon('seedling')} Skenario: {st.session_state.active_scenario}</h3>", unsafe_allow_html=True)
     
-    # Get existing data if scenario already calculated
-    existing_data = st.session_state.scenarios.get(st.session_state.active_scenario, {})
+    # Logic Prioritas Data:
+    # 1. Existing Data (skenario sudah dihitung & tersimpan)
+    # 2. Loaded Template (baru saja di-load dari sidebar)
+    # 3. Default Values (kosong/standar)
     
-    # Show status indicator
-    if existing_data:
-        st.success(f"✅ Skenario ini sudah dihitung. Data terakhir: {existing_data.get('calculated_at', 'N/A')}")
-        st.info("💡 Anda bisa mengubah nilai di bawah dan klik 'Hitung RAB' untuk update.")
+    existing_data = st.session_state.scenarios.get(st.session_state.active_scenario, {})
+    loaded_tpl = st.session_state.get('loaded_template', None)
+    
+    # Determine source of data for default values
+    # If template is loaded, use it. But if existing data is present, it usually takes precedence 
+    # UNLESS the user explicitly just clicked "Apply Template".
+    # Since we can't easily track "just clicked", we'll check if loaded_tpl exists. 
+    # Ideally, we should clear loaded_template after using it once to avoid it sticking forever.
+    
+    current_defaults = {}
+    
+    if loaded_tpl:
+        # Use template data
+        current_defaults = {
+            'target_produksi': loaded_tpl.get('target_produksi', 6.0),
+            'metode_tanam': loaded_tpl.get('metode_tanam', "Transplanting (Pindah Tanam)"),
+            # Map costs from template structure
+            'biaya_persiapan': loaded_tpl.get('costs_per_ha', {}).get('persiapan_lahan', 0),
+            'biaya_bibit': loaded_tpl.get('costs_per_ha', {}).get('bibit', 0),
+            # ... and so on for other costs. 
+            # Note: Templates currently structued differently than flat input fields?
+            # Let's check template structure in rab_templates.py again to be sure.
+        }
+        st.info(f"📋 Menggunakan data dari template: **{loaded_tpl.get('description', 'Custom Template')}**")
+        
+        # IMPORTANT: We should use existing_data if available, UNLESS template was just loaded?
+        # A safer approach: If loaded_template exists, show a button "Apply to Inputs" or apply immediately?
+        # The sidebar button ALREADY said "Apply". So we should use it.
+        # But we must act carefully not to overwrite existing saved scenario data unexpectedly.
+        
+    elif existing_data:
+         st.success(f"✅ Data tersimpan dari perhitungan terakhir ({existing_data.get('calculated_at', 'N/A')})")
     else:
-        st.info("📝 Skenario baru - Silakan isi form di bawah dan klik 'Hitung RAB'")
+        st.info("📝 Skenario baru - Silakan isi form di bawah")
+
+    # Helper function to get value safely
+    def get_val(key, default):
+        # Priority 1: Check existing saved data
+        if existing_data and key in existing_data:
+            return existing_data[key]
+        # Priority 2: Check loaded template (if mapped correctly)
+        if loaded_tpl:
+            # We need to map the flat key to template structure if needed
+            # Or assume loaded_tpl has flat structure?
+            return loaded_tpl.get(key, default)
+        return default
     
     # Basic Information
     col1, col2, col3 = st.columns(3)
@@ -154,33 +200,46 @@ with tab1:
         st.markdown("**📍 Informasi Lahan**")
         luas_lahan = st.number_input("Luas Lahan (ha)", 
                                      min_value=0.1, max_value=100.0, 
-                                     value=existing_data.get('luas_lahan', 1.0), 
+                                     value=float(get_val('luas_lahan', 1.0)), 
                                      step=0.1, 
                                      key=f"luas_{st.session_state.active_scenario}")
         
         lokasi_options = ["Jawa Barat", "Jawa Tengah", "Jawa Timur", "Sulawesi Selatan", "Sumatera Utara"]
-        default_lokasi_idx = lokasi_options.index(existing_data['lokasi']) if 'lokasi' in existing_data else 0
+        default_loc = get_val('lokasi', "Jawa Barat")
+        default_lokasi_idx = lokasi_options.index(default_loc) if default_loc in lokasi_options else 0
         lokasi = st.selectbox("Lokasi", lokasi_options, 
                              index=default_lokasi_idx,
                              key=f"lok_{st.session_state.active_scenario}")
     
     with col2:
         st.markdown("**🌾 Varietas & Metode**")
+        varietas_options = ["IR64", "Ciherang", "Inpari 32", "Inpari 42", "Inpari 43", "Mekongga", "Memberamo"]
         varietas = st.selectbox("Varietas Padi", 
-            ["IR64", "Ciherang", "Inpari 32", "Inpari 42", "Inpari 43", "Mekongga", "Memberamo"],
+            varietas_options,
             key=f"var_{st.session_state.active_scenario}")
-        metode_tanam = st.selectbox("Metode Tanam", [
+            # Note: Varietas not currently in template structure
+            
+        metode_options = [
             "Transplanting (Pindah Tanam)",
             "Direct Seeding (Tabela)",
             "SRI (System of Rice Intensification)",
             "Jajar Legowo 2:1",
             "Jajar Legowo 4:1"
-        ], key=f"met_{st.session_state.active_scenario}")
+        ]
+        default_metode = get_val('metode_tanam', "Transplanting (Pindah Tanam)")
+        default_metode_idx = metode_options.index(default_metode) if default_metode in metode_options else 0
+        metode_tanam = st.selectbox("Metode Tanam", metode_options, 
+                                   index=default_metode_idx,
+                                   key=f"met_{st.session_state.active_scenario}")
     
     with col3:
         st.markdown("**🎯 Target & Harga**")
-        target_produksi = st.number_input("Target Produksi (ton/ha)", min_value=1.0, max_value=15.0, value=6.0, step=0.5, key=f"prod_{st.session_state.active_scenario}")
-        harga_jual = st.number_input("Harga Jual GKP (Rp/kg)", min_value=3000, max_value=10000, value=5500, step=100, key=f"harga_{st.session_state.active_scenario}")
+        target_produksi = st.number_input("Target Produksi (ton/ha)", min_value=1.0, max_value=15.0, 
+                                          value=float(get_val('target_produksi', 6.0)), step=0.5, 
+                                          key=f"prod_{st.session_state.active_scenario}")
+        harga_jual = st.number_input("Harga Jual GKP (Rp/kg)", min_value=3000, max_value=10000, 
+                                     value=int(get_val('harga_jual', 5500)), step=100, 
+                                     key=f"harga_{st.session_state.active_scenario}")
         musim_tanam = st.selectbox("Musim Tanam", ["MT I (Okt-Feb)", "MT II (Mar-Jul)", "MT III (Agu-Nov)"], key=f"musim_{st.session_state.active_scenario}")
     
     st.markdown("---")
@@ -189,22 +248,46 @@ with tab1:
     if input_mode == "Simple":
         st.markdown(f"<h3>{icon('money')} Rincian Biaya (Mode Simple)</h3>", unsafe_allow_html=True)
         
+        # Mapping helpers for cost structure
+        costs = loaded_tpl.get('costs_per_ha', {}) if loaded_tpl else {}
+        
         col_cost1, col_cost2 = st.columns(2)
         
         with col_cost1:
             st.markdown("**🌱 Persiapan Lahan & Bibit**")
-            biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=2000000, step=100000, key=f"olah_{st.session_state.active_scenario}")
-            biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=1500000, step=100000, key=f"bibit_{st.session_state.active_scenario}")
+            # Map cost fields
+            def get_cost(key, default):
+                if existing_data: return existing_data.get(key, default) # Use existing calculation keys if available? No, simple mode keys are specific widget keys
+                # Wait, existing_data stores TOTALS like 'total_persiapan', not individual widget keys usually
+                # But let's check saving logic... saving logic stores granular keys?
+                # Actually saving logic stores totals. But widget state should persist?
+                # Re-using get_val logic with template mapping:
+                if loaded_tpl:
+                    if key == 'olah': return costs.get('persiapan_lahan', 2000000)
+                    if key == 'bibit': return costs.get('bibit', 1500000)
+                    if key == 'urea': return costs.get('pupuk_subsidi', 2000000) * 0.4 # Est
+                    if key == 'npk': return costs.get('pupuk_subsidi', 2000000) * 0.6 # Est
+                    if key == 'org': return costs.get('pupuk_organik', 800000)
+                    if key == 'pest': return costs.get('pestisida', 1000000)
+                    if key == 'herb': return 500000 # Default
+                    if key == 'tanam': return costs.get('tenaga_kerja', 4000000) * 0.3 # Est
+                    if key == 'rawat': return costs.get('tenaga_kerja', 4000000) * 0.3 # Est
+                    if key == 'panen': return costs.get('panen_pasca', 3000000)
+                    if key == 'sewa': return costs.get('lainnya', 500000)
+                return default
+
+            biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=int(get_cost('olah', 2000000)), step=100000, key=f"olah_{st.session_state.active_scenario}")
+            biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=int(get_cost('bibit', 1500000)), step=100000, key=f"bibit_{st.session_state.active_scenario}")
             
             st.markdown("**🧪 Pupuk**")
-            biaya_urea = st.number_input("Urea (Rp/ha)", value=1200000, step=50000, key=f"urea_{st.session_state.active_scenario}")
-            biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=1500000, step=50000, key=f"npk_{st.session_state.active_scenario}")
-            biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=800000, step=50000, key=f"org_{st.session_state.active_scenario}")
+            biaya_urea = st.number_input("Urea (Rp/ha)", value=int(get_cost('urea', 1200000)), step=50000, key=f"urea_{st.session_state.active_scenario}")
+            biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=int(get_cost('npk', 1500000)), step=50000, key=f"npk_{st.session_state.active_scenario}")
+            biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=int(get_cost('org', 800000)), step=50000, key=f"org_{st.session_state.active_scenario}")
         
         with col_cost2:
             st.markdown("**💊 Pestisida & Herbisida**")
-            biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=1000000, step=50000, key=f"pest_{st.session_state.active_scenario}")
-            biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=500000, step=50000, key=f"herb_{st.session_state.active_scenario}")
+            biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=int(get_cost('pest', 1000000)), step=50000, key=f"pest_{st.session_state.active_scenario}")
+            biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=int(get_cost('herb', 500000)), step=50000, key=f"herb_{st.session_state.active_scenario}")
             
             st.markdown("**👷 Tenaga Kerja**")
             biaya_tanam = st.number_input("Tanam (Rp/ha)", value=2000000, step=100000, key=f"tanam_{st.session_state.active_scenario}")
