@@ -1,24 +1,27 @@
 """
-📋 SOP Budidaya Padi - Standard Operating Procedures
+ SOP Budidaya Padi - Standard Operating Procedures
 Complete SOP for rice cultivation from land preparation to harvest
 """
 
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="SOP Budidaya", page_icon="📋", layout="wide")
+st.set_page_config(page_title="SOP Budidaya", page_icon="", layout="wide")
 
-st.title("📋 SOP Budidaya Padi")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('clipboard-list', size='lg')} SOP Budidaya")
 st.markdown("**Standard Operating Procedure lengkap budidaya padi**")
 st.markdown("---")
 
 # Tabs for different phases
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🌱 Persiapan", "🌾 Tanam", "🔧 Pemeliharaan", "🌾 Panen", "📊 Checklist"
+    " Persiapan", " Tanam", " Pemeliharaan", " Panen", " Checklist"
 ])
 
 with tab1:
-    st.header("🌱 SOP Persiapan Lahan & Bibit")
+    st.header(" SOP Persiapan Lahan & Bibit")
     
     st.subheader("A. Persiapan Lahan")
     
@@ -81,7 +84,7 @@ with tab1:
     st.dataframe(sop_bibit, use_container_width=True, hide_index=True)
 
 with tab2:
-    st.header("🌾 SOP Penanaman")
+    st.header(" SOP Penanaman")
     
     sop_tanam = pd.DataFrame({
         'No': [1, 2, 3, 4, 5, 6],
@@ -114,7 +117,7 @@ with tab2:
     st.dataframe(sop_tanam, use_container_width=True, hide_index=True)
 
 with tab3:
-    st.header("🔧 SOP Pemeliharaan")
+    st.header(" SOP Pemeliharaan")
     
     st.subheader("A. Pengairan")
     
@@ -171,7 +174,7 @@ with tab3:
     """)
 
 with tab4:
-    st.header("🌾 SOP Panen & Pasca Panen")
+    st.header(" SOP Panen & Pasca Panen")
     
     st.subheader("A. Panen")
     
@@ -231,9 +234,9 @@ with tab4:
     st.dataframe(sop_pasca, use_container_width=True, hide_index=True)
 
 with tab5:
-    st.header("📊 Checklist Budidaya Padi")
+    st.header(" Checklist Budidaya Padi")
     
-    st.markdown("### ✅ Checklist Persiapan")
+    st.markdown("###  Checklist Persiapan")
     
     prep_checks = [
         "Lahan dibersihkan dari gulma dan sisa tanaman",
@@ -249,7 +252,7 @@ with tab5:
         st.checkbox(check, key=f"prep_{check[:20]}")
     
     st.markdown("---")
-    st.markdown("### ✅ Checklist Pemeliharaan")
+    st.markdown("###  Checklist Pemeliharaan")
     
     maint_checks = [
         "Penyulaman sudah dilakukan (7-10 HST)",
@@ -266,7 +269,7 @@ with tab5:
         st.checkbox(check, key=f"maint_{check[:20]}")
     
     st.markdown("---")
-    st.markdown("### ✅ Checklist Panen")
+    st.markdown("###  Checklist Panen")
     
     harvest_checks = [
         "Gabah sudah menguning 90-95%",
@@ -283,4 +286,4 @@ with tab5:
         st.checkbox(check, key=f"harvest_{check[:20]}")
 
 st.markdown("---")
-st.success("💡 **Penting:** Ikuti SOP dengan konsisten untuk hasil optimal dan kualitas terbaik")
+st.success(" **Penting:** Ikuti SOP dengan konsisten untuk hasil optimal dan kualitas terbaik")

@@ -1,5 +1,5 @@
 """
-🧪 Kalkulator Pupuk - Rice Fertilizer Calculator
+ Kalkulator Pupuk - Rice Fertilizer Calculator
 Calculate optimal fertilizer requirements for rice cultivation
 """
 
@@ -7,16 +7,19 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.set_page_config(page_title="Kalkulator Pupuk", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="Kalkulator Pupuk", page_icon="", layout="wide")
 
-st.title("🧪 Kalkulator Pupuk Padi")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('flask', size='lg')} Kalkulator Pupuk")
 st.markdown("**Hitung kebutuhan pupuk optimal untuk budidaya padi**")
 st.markdown("---")
 
-tab1, tab2, tab3 = st.tabs(["📝 Input Data", "📊 Hasil", "📈 Rekomendasi"])
+tab1, tab2, tab3 = st.tabs([" Input Data", " Hasil", " Rekomendasi"])
 
 with tab1:
-    st.header("📝 Input Data Lahan & Target")
+    st.header(" Input Data Lahan & Target")
     
     col1, col2 = st.columns(2)
     
@@ -30,7 +33,7 @@ with tab1:
         status_hara = st.selectbox("Status Hara Tanah", ["Rendah", "Sedang", "Tinggi"])
         umur_tanam = st.number_input("Umur Varietas (hari)", 100, 150, 115, 5)
     
-    if st.button("🧮 Hitung Kebutuhan Pupuk", type="primary"):
+    if st.button(" Hitung Kebutuhan Pupuk", type="primary"):
         # Calculation logic
         base_n = 150 if status_hara == "Rendah" else 120 if status_hara == "Sedang" else 100
         base_p = 60 if status_hara == "Rendah" else 50 if status_hara == "Sedang" else 40
@@ -58,10 +61,10 @@ with tab1:
             'p_need': p_need,
             'k_need': k_need
         }
-        st.success("✅ Perhitungan selesai! Lihat hasil di tab 'Hasil'")
+        st.success(" Perhitungan selesai! Lihat hasil di tab 'Hasil'")
 
 with tab2:
-    st.header("📊 Kebutuhan Pupuk")
+    st.header(" Kebutuhan Pupuk")
     
     if 'fertilizer_data' in st.session_state:
         data = st.session_state.fertilizer_data
@@ -88,7 +91,7 @@ with tab2:
         st.altair_chart(chart, use_container_width=True)
         
         # Schedule
-        st.subheader("📅 Jadwal Aplikasi")
+        st.subheader(" Jadwal Aplikasi")
         schedule = pd.DataFrame({
             'Waktu': ['0 HST', '10-15 HST', '30-35 HST', '50-55 HST'],
             'Urea (kg)': [0, data['urea']*0.4, data['urea']*0.4, data['urea']*0.2],
@@ -100,9 +103,9 @@ with tab2:
         st.info("Input data di tab pertama")
 
 with tab3:
-    st.header("📈 Rekomendasi Pemupukan")
+    st.header(" Rekomendasi Pemupukan")
     st.markdown("""
-    ### 💡 Tips Pemupukan Efektif:
+    ###  Tips Pemupukan Efektif:
     
     1. **Waktu Aplikasi**
        - Pagi hari (7-9 pagi) atau sore (15-17)

@@ -1,10 +1,10 @@
-# Budidaya Padi 🌾
+# Budidaya Padi
 
 Sistem Manajemen Budidaya Padi Terpadu dengan AI & Machine Learning
 
 ## Features
 
-### 🎯 Comprehensive Modules (20+)
+### Comprehensive Modules (14+)
 - **Perencanaan & Keuangan**: RAB Calculator, Business Analysis, ROI Calculator
 - **Budidaya & Teknis**: Cultivation Guide, Rice Varieties, SOP, Fertilizer Calculator
 - **Hama & Penyakit**: Pest Database, Spraying Strategy, AI Disease Detection
@@ -12,13 +12,13 @@ Sistem Manajemen Budidaya Padi Terpadu dengan AI & Machine Learning
 - **AI & ML**: PyCaret ML Lab, AI Recommendations, Analytics Hub
 - **Visualisasi**: Altair Visualizations, Statistical Analysis, Dashboard
 
-### ⭐ Key Highlights
-- 🤖 **PyCaret Integration**: Automated ML for yield prediction and classification
-- 📊 **Altair Visualizations**: Interactive, declarative charts
-- 🌾 **Rice-Specific**: 20+ Indonesian rice varieties, pest database, water management
-- 💧 **Water Management**: AWD (Alternate Wetting & Drying) calculator
-- 📊 **Advanced Analytics**: Confidence intervals, Monte Carlo simulations, benchmarking
-- 🔬 **Research Tools**: ANOVA, RCBD, statistical analysis
+### Key Highlights
+- **PyCaret Integration**: Automated ML for yield prediction and classification
+- **Altair Visualizations**: Interactive, declarative charts
+- **Rice-Specific**: 20+ Indonesian rice varieties, pest database, water management
+- **Water Management**: AWD (Alternate Wetting & Drying) calculator
+- **Advanced Analytics**: Confidence intervals, Monte Carlo simulations, benchmarking
+- **Research Tools**: ANOVA, RCBD, statistical analysis
 
 ## Technology Stack
 - **Framework**: Streamlit
@@ -101,4 +101,4 @@ For questions or support, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ for Indonesian rice farmers**
+**Built with dedication for Indonesian rice farmers**

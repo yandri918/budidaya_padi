@@ -1,5 +1,5 @@
 """
-🚜 Mekanisasi & Alsintan - Agricultural Machinery
+ Mekanisasi & Alsintan - Agricultural Machinery
 Calculator for machine capacity, cost analysis (Buy vs Rent), and maintenance guide
 """
 
@@ -7,16 +7,19 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.set_page_config(page_title="Mekanisasi", page_icon="🚜", layout="wide")
+st.set_page_config(page_title="Mekanisasi", page_icon="", layout="wide")
 
-st.title("🚜 Mekanisasi & Alsintan")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('tractor', size='lg')} Mekanisasi")
 st.markdown("**Manajemen Alat Mesin Pertanian (Traktor, Transplanter, Combine Harvester)**")
 st.markdown("---")
 
-tab1, tab2, tab3 = st.tabs(["⏱️ Kalkulator Kapasitas", "💰 Analisis Sewa vs Beli", "🔧 Perawatan Mesin"])
+tab1, tab2, tab3 = st.tabs(["⏱ Kalkulator Kapasitas", " Analisis Sewa vs Beli", " Perawatan Mesin"])
 
 with tab1:
-    st.header("⏱️ Kalkulator Kapasitas Kerja")
+    st.header("⏱ Kalkulator Kapasitas Kerja")
     st.write("Hitung berapa lama waktu yang dibutuhkan untuk mengolah lahan.")
     
     col_cap1, col_cap2 = st.columns(2)
@@ -62,20 +65,20 @@ with tab1:
         
         if total_jam < 8:
             durasi_str = f"{total_jam:.1f} Jam ({total_jam*60:.0f} Menit)"
-            st.success(f"⏱️ Estimasi Waktu: **{durasi_str}** (Selesai dalam 1 hari)")
+            st.success(f"⏱ Estimasi Waktu: **{durasi_str}** (Selesai dalam 1 hari)")
         else:
             hari_kerja = total_jam / 8
-            st.warning(f"⏱️ Estimasi Waktu: **{total_jam:.1f} Jam** (Sekitar {hari_kerja:.1f} hari kerja)")
+            st.warning(f"⏱ Estimasi Waktu: **{total_jam:.1f} Jam** (Sekitar {hari_kerja:.1f} hari kerja)")
 
         # Solar Consumption
         konsumsi_per_jam = 1.5 if "Roda 2" in jenis_alsintan or "Mini" in jenis_alsintan else 5.0
         konsumsi_per_jam = st.number_input("Konsumsi BBM (Liter/Jam)", value=konsumsi_per_jam)
         total_bbm = total_jam * konsumsi_per_jam
         
-        st.info(f"⛽ Estimasi BBM: **{total_bbm:.1f} Liter**")
+        st.info(f" Estimasi BBM: **{total_bbm:.1f} Liter**")
 
 with tab2:
-    st.header("💰 Analisis: Beli Sendiri atau Sewa?")
+    st.header(" Analisis: Beli Sendiri atau Sewa?")
     st.markdown("Analisis Titik Impas (Break Even Point) kepemilikan alsintan.")
     
     col_buy1, col_buy2 = st.columns(2)
@@ -101,7 +104,7 @@ with tab2:
     if margin_per_ha > 0:
         bep_luas = biaya_tetap_thn / margin_per_ha
         
-        st.markdown("### 📊 Hasil Analisis")
+        st.markdown("###  Hasil Analisis")
         st.metric("Minimum Luas Garapan per Tahun", f"{bep_luas:.1f} Hektar")
         
         st.info(f"""
@@ -115,14 +118,14 @@ with tab2:
         keuntungan = (margin_per_ha * luas_rencana) - biaya_tetap_thn
         
         if keuntungan > 0:
-            st.success(f"✅ Untung Bersih: **Rp {keuntungan:,.0f} / tahun**")
+            st.success(f" Untung Bersih: **Rp {keuntungan:,.0f} / tahun**")
         else:
-            st.error(f"❌ Rugi: **Rp {abs(keuntungan):,.0f} / tahun** (Sebaiknya sewa saja)")
+            st.error(f" Rugi: **Rp {abs(keuntungan):,.0f} / tahun** (Sebaiknya sewa saja)")
     else:
         st.error("Biaya operasional sendiri lebih mahal dari harga sewa. Tidak layak beli!")
 
 with tab3:
-    st.header("🔧 checklist Perawatan Berkala")
+    st.header(" checklist Perawatan Berkala")
     st.write("Pilih jenis mesin untuk melihat jadwal maintenance.")
     
     tipe_mesin = st.selectbox("Pilih Mesin", ["Traktor Roda 2", "Traktor Roda 4", "Combine Harvester"])
@@ -156,9 +159,9 @@ with tab3:
     }
     
     for periode, items in maintenance_data.items():
-        with st.expander(f"📋 {periode}"):
+        with st.expander(f" {periode}"):
             for item in items:
                 st.checkbox(item, key=f"{tipe_mesin}_{periode}_{item}")
 
 st.markdown("---")
-st.caption("💡 **Tip:** Mesin yang terawat akan memiliki harga jual kembali (Resale Value) yang tinggi.")
+st.caption(" **Tip:** Mesin yang terawat akan memiliki harga jual kembali (Resale Value) yang tinggi.")

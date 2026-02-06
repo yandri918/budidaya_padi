@@ -1,22 +1,25 @@
 """
-🔫 Strategi Penyemprotan - Spraying Strategy
+ Strategi Penyemprotan - Spraying Strategy
 Technical guide for pesticide application, dose calculator, and resistance management
 """
 
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="Strategi Semprot", page_icon="🔫", layout="wide")
+st.set_page_config(page_title="Strategi Semprot", page_icon="", layout="wide")
 
-st.title("🔫 Strategi Penyemprotan Tepat Sasaran")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('spray-can', size='lg')} Strategi Semprot")
 st.markdown("**Panduan teknis aplikasi pestisida, kalkulator dosis, dan manajemen resistensi**")
 st.markdown("---")
 
-tab1, tab2, tab3 = st.tabs(["🎯 Strategi per Hama", "🧮 Kalkulator Dosis", "🔄 Rotasi Bahan Aktif"])
+tab1, tab2, tab3 = st.tabs([" Strategi per Hama", " Kalkulator Dosis", " Rotasi Bahan Aktif"])
 
 with tab1:
-    st.header("🎯 Taktik Penyemprotan per Target")
-    st.info("💡 Beda hama, beda cara semprotnya. Jangan asal 'mandiin' tanaman!")
+    st.header(" Taktik Penyemprotan per Target")
+    st.info(" Beda hama, beda cara semprotnya. Jangan asal 'mandiin' tanaman!")
     
     pest_strategies = {
         "Wereng Coklat": {
@@ -83,16 +86,16 @@ with tab1:
     col_s1, col_s2 = st.columns(2)
     
     with col_s1:
-        st.markdown(f"### 🎯 Target: {strategy['target']}")
+        st.markdown(f"###  Target: {strategy['target']}")
         st.markdown(f"**⏰ Waktu Terbaik:** {strategy['waktu']}")
-        st.markdown(f"**🚿 Jenis Nozzle:** {strategy['nozzle']}")
+        st.markdown(f"** Jenis Nozzle:** {strategy['nozzle']}")
     
     with col_s2:
-        st.success(f"**💡 Taktik Jitu:** {strategy['taktik']}")
-        st.warning(f"**🧪 Bahan Aktif Rekomendasi:** {strategy['bahan_aktif']}")
+        st.success(f"** Taktik Jitu:** {strategy['taktik']}")
+        st.warning(f"** Bahan Aktif Rekomendasi:** {strategy['bahan_aktif']}")
 
 with tab2:
-    st.header("🧮 Kalkulator Dosis & Tangki")
+    st.header(" Kalkulator Dosis & Tangki")
     st.write("Hitung berapa sendok/tutup yang harus dimasukkan ke dalam tangki.")
     
     col_calc1, col_calc2 = st.columns(2)
@@ -116,12 +119,12 @@ with tab2:
         st.subheader("Hasil Perhitungan:")
         st.metric(f"Dosis Per Tangki ({volume_tangki}L)", f"{kebutuhan_per_tangki:.1f} {unit}")
         
-        st.info(f"💡 Kira-kira setara dengan **{kebutuhan_per_tangki/15:.1f} - {kebutuhan_per_tangki/10:.1f} {alat_takar}**")
+        st.info(f" Kira-kira setara dengan **{kebutuhan_per_tangki/15:.1f} - {kebutuhan_per_tangki/10:.1f} {alat_takar}**")
         st.caption("*Pastikan kalibrasi alat takar Anda sendiri untuk akurasi maksimal*")
 
 with tab3:
-    st.header("🔄 Manajemen Resistensi (Rotasi Racun)")
-    st.error("⚠️ **BAHAYA:** Jangan gunakan bahan aktif yang sama terus menerus! Hama akan kebal.")
+    st.header(" Manajemen Resistensi (Rotasi Racun)")
+    st.error(" **BAHAYA:** Jangan gunakan bahan aktif yang sama terus menerus! Hama akan kebal.")
     
     rotation_cols = st.columns(3)
     
@@ -140,7 +143,7 @@ with tab3:
         st.write("*Efek: Hama gagal ganti kulit*")
         
     with rotation_cols[2]:
-        st.markdown("### 🔴 Minggu 5-6")
+        st.markdown("###  Minggu 5-6")
         st.write("**Cara Kerja C (Energi/Perut)**")
         st.write("- Fipronil")
         st.write("- Klorfenapir")
@@ -150,4 +153,4 @@ with tab3:
     st.write("**Tips:** Cek Kode MoA (Mode of Action) pada kemasan pestisida. Rotasi berdasarkan **KODE ANGKA**, bukan merek dagang!")
 
 st.markdown("---")
-st.warning("⚠️ **Safety First:** Selalu gunakan masker, sarung tangan, dan baju lengan panjang saat menyemprot.")
+st.warning(" **Safety First:** Selalu gunakan masker, sarung tangan, dan baju lengan panjang saat menyemprot.")

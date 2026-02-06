@@ -1,5 +1,5 @@
 """
-🧪 Analisis Tanah & PUTS - Soil Analysis
+ Analisis Tanah & PUTS - Soil Analysis
 Interpretation of Soil Test Kit (PUTS - Perangkat Uji Tanah Sawah) results
 """
 
@@ -7,13 +7,16 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.set_page_config(page_title="Analisis Tanah", page_icon="🧪", layout="wide")
+st.set_page_config(page_title="Analisis Tanah", page_icon="", layout="wide")
 
-st.title("🧪 Analisis Tanah & Rekomendasi Pemupukan")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('vial', size='lg')} Analisis Tanah")
 st.markdown("**Interpretasi hasil PUTS (Perangkat Uji Tanah Sawah) dan rekomendasi spesifik lokasi**")
 st.markdown("---")
 
-tab1, tab2 = st.tabs(["📝 Input Hasil Uji", "ℹ️ Panduan PUTS"])
+tab1, tab2 = st.tabs([" Input Hasil Uji", "ℹ Panduan PUTS"])
 
 with tab1:
     st.header("Input Hasil Pengujian Lapangan")
@@ -24,12 +27,12 @@ with tab1:
     with col1:
         st.subheader("1. Status Nitrogen (N)")
         
-        tab_n1, tab_n2 = st.tabs(["📸 AI Kamera (BWD)", "manual Input"])
+        tab_n1, tab_n2 = st.tabs([" AI Kamera (BWD)", "manual Input"])
         
         bwd_result = "Sedang (BWD 4 / Hijau)" # Default
         
         with tab_n1:
-            st.info("💡 Foto daun padi Anda dari jarak dekat (fokus)")
+            st.info(" Foto daun padi Anda dari jarak dekat (fokus)")
             uploaded_file = st.file_uploader("Upload Foto Daun", type=['jpg', 'png', 'jpeg'])
             
             if uploaded_file is not None:
@@ -54,7 +57,7 @@ with tab1:
                     st.color_picker("Warna Terdeteksi", f"#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}", disabled=True)
                     
                     if score <= 2.5:
-                        st.error(f"🔴 BWD: {score} (Kekurangan N Parah)")
+                        st.error(f" BWD: {score} (Kekurangan N Parah)")
                         bwd_result = "Sangat Rendah (BWD < 3 / Pucat)"
                     elif score <= 3.5:
                         st.warning(f"🟡 BWD: {score} (Kekurangan N)")
@@ -63,7 +66,7 @@ with tab1:
                         st.success(f"🟢 BWD: {score} (Cukup)")
                         bwd_result = "Sedang (BWD 4 / Hijau)"
                     else:
-                        st.info(f"🔵 BWD: {score} (Berlebih)")
+                        st.info(f" BWD: {score} (Berlebih)")
                         bwd_result = "Tinggi (BWD > 4 / Hijau Gelap)"
                 else:
                     st.error("Gagal menganalisis gambar.")
@@ -99,7 +102,7 @@ with tab1:
         ])
         
         st.subheader("4. pH Tanah")
-        tab_ph1, tab_ph2 = st.tabs(["🧪 Indikator Warna (PUTS)", "🔢 pH Meter (Angka)"])
+        tab_ph1, tab_ph2 = st.tabs([" Indikator Warna (PUTS)", " pH Meter (Angka)"])
         
         ph_val = 6.0 # Default
         
@@ -120,7 +123,7 @@ with tab1:
             ph_manual = st.number_input("Input Angka pH", min_value=3.0, max_value=9.0, value=6.0, step=0.1)
         
         # Determine final pH
-        if tab_ph2.title == "🔢 pH Meter (Angka)" and ph_manual != 6.0: # If user changed manual input
+        if tab_ph2.title == " pH Meter (Angka)" and ph_manual != 6.0: # If user changed manual input
              final_ph = ph_manual
         else:
              # Logic to prioritize manual if tab selected (Streamlit limitation, simplified)
@@ -132,8 +135,8 @@ with tab1:
     
     st.markdown("---")
     
-    if st.button("🔍 Analisis & Buat Rekomendasi", type="primary"):
-        st.header("📊 Hasil Analisis & Rekomendasi")
+    if st.button(" Analisis & Buat Rekomendasi", type="primary"):
+        st.header(" Hasil Analisis & Rekomendasi")
         
         # Recommendation Logic
         rekom_urea = 0
@@ -182,7 +185,7 @@ with tab1:
             st.altair_chart(chart, use_container_width=True)
 
         with col_res2:
-            st.subheader("💡 Catatan Agronomis")
+            st.subheader(" Catatan Agronomis")
             for i, note in enumerate(catatan, 1):
                 st.info(f"{i}. {note}")
             

@@ -1,5 +1,5 @@
 """
-🌦️ Weather Monitoring - Environmental Science
+ Weather Monitoring - Environmental Science
 Real-time weather data and forecast for precision farming
 """
 
@@ -17,9 +17,12 @@ if str(Path(__file__).parent.parent) not in sys.path:
 
 from services.weather_service import WeatherService
 
-st.set_page_config(page_title="Cuaca Lahan", page_icon="🌦️", layout="wide")
+st.set_page_config(page_title="Cuaca Lahan", page_icon="", layout="wide")
 
-st.title("🌦️ Monitoring Cuaca & Iklim Lahan")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('cloud-sun', size='lg')} Monitoring Cuaca")
 st.markdown("**Data cuaca presisi (Suhu, Hujan, Angin) untuk keputusan budidaya yang akurat**")
 st.markdown("---")
 
@@ -27,7 +30,7 @@ st.markdown("---")
 col_control, col_content = st.columns([1, 2])
 
 with col_control:
-    st.subheader("📍 Lokasi Lahan")
+    st.subheader(" Lokasi Lahan")
     
     # Initialize session state for lat/lon
     if 'lat' not in st.session_state: st.session_state.lat = -7.5 # Default Java
@@ -50,11 +53,11 @@ with col_control:
     lat = st.number_input("Latitude", value=st.session_state.lat, format="%.6f")
     lon = st.number_input("Longitude", value=st.session_state.lon, format="%.6f")
     
-    if st.button("📍 Update Cuaca", type="primary"):
+    if st.button(" Update Cuaca", type="primary"):
         st.rerun()
 
     st.markdown("---")
-    st.info("💡 **Tips:** Klik pada peta untuk memilih lokasi sawah Anda secara spesifik.")
+    st.info(" **Tips:** Klik pada peta untuk memilih lokasi sawah Anda secara spesifik.")
 
 with col_content:
     st.subheader(f"Data Cuaca Real-time")
@@ -80,21 +83,21 @@ with col_content:
         col4.metric("Angin", f"{curr['wind']} km/h", "Kecepatan")
         
         # 3. Recommendations
-        st.markdown("### 👨‍🌾 Rekomendasi Agronomis")
+        st.markdown("### ‍ Rekomendasi Agronomis")
         if recs:
             for rec in recs:
                 st.success(rec)
         
         # 4. Forecast Chart (Rainfall & Temp)
-        st.markdown("### 📅 Prakiraan 7 Hari Kedepan")
+        st.markdown("###  Prakiraan 7 Hari Kedepan")
         
         df_daily = weather['daily']
         # Map weather codes to emoji (Simplified)
         def get_icon(code):
-            if code <= 3: return "☀️"
-            elif code <= 65: return "🌧️"
-            elif code > 65: return "⛈️"
-            return "☁️"
+            if code <= 3: return ""
+            elif code <= 65: return ""
+            elif code > 65: return ""
+            return ""
             
         df_daily['icon'] = df_daily['code'].apply(get_icon)
         

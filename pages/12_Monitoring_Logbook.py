@@ -1,5 +1,5 @@
 """
-📝 Monitoring & Logbook - Farm Digital Journal
+ Monitoring & Logbook - Farm Digital Journal
 Track daily activities, expenses, and plant growth progress
 """
 
@@ -9,9 +9,12 @@ import altair as alt
 from datetime import datetime
 import random
 
-st.set_page_config(page_title="Monitoring & Logbook", page_icon="📝", layout="wide")
+st.set_page_config(page_title="Monitoring & Logbook", page_icon="", layout="wide")
 
-st.title("📝 Monitoring Harian & Logbook")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('book', size='lg')} Monitoring Logbook")
 st.markdown("**Catatan digital aktivitas kebun, keuangan, dan progres pertumbuhan tanaman**")
 st.markdown("---")
 
@@ -27,7 +30,7 @@ if 'growth_data' not in st.session_state:
         {"umur": 21, "tinggi": 35, "anakan": 8, "daun": 6},
     ]
 
-tab1, tab2, tab3 = st.tabs(["📝 Catatan Harian", "📈 Grafik Pertumbuhan", "💰 Rekap Keuangan"])
+tab1, tab2, tab3 = st.tabs([" Catatan Harian", " Grafik Pertumbuhan", " Rekap Keuangan"])
 
 with tab1:
     st.header("Input Jurnal Harian")
@@ -52,7 +55,7 @@ with tab1:
             foto = st.file_uploader("Upload Foto Dokumentasi", type=['jpg', 'png'])
             catatan_khusus = st.text_input("Catatan Tambahan", placeholder="Cuaca, kondisi tanaman, dll")
             
-        submit = st.form_submit_button("💾 Simpan Catatan")
+        submit = st.form_submit_button(" Simpan Catatan")
         
         if submit:
             entry = {
@@ -63,10 +66,10 @@ with tab1:
                 "Catatan": catatan_khusus
             }
             st.session_state.logbook_data.append(entry)
-            st.success("✅ Catatan berhasil disimpan!")
+            st.success(" Catatan berhasil disimpan!")
 
     st.markdown("---")
-    st.subheader("📋 Riwayat Aktivitas")
+    st.subheader(" Riwayat Aktivitas")
     
     if st.session_state.logbook_data:
         df_log = pd.DataFrame(st.session_state.logbook_data)
@@ -86,7 +89,7 @@ with tab1:
         st.info("Belum ada catatan aktivitas. Silakan input kegiatan pertama Anda.")
 
 with tab2:
-    st.header("📈 Monitoring Pertumbuhan")
+    st.header(" Monitoring Pertumbuhan")
     
     with st.form("growth_form"):
         col_g1, col_g2, col_g3, col_g4 = st.columns(4)
@@ -99,7 +102,7 @@ with tab2:
         with col_g4:
             g_daun = st.number_input("Warna Daun (Skala BWD 2-5)", min_value=2.0, max_value=5.0, step=0.1)
             
-        submit_growth = st.form_submit_button("➕ Tambah Data Pertumbuhan")
+        submit_growth = st.form_submit_button(" Tambah Data Pertumbuhan")
         
         if submit_growth:
             st.session_state.growth_data.append({
@@ -139,7 +142,7 @@ with tab2:
         st.dataframe(df_growth, use_container_width=True, hide_index=True)
 
 with tab3:
-    st.header("💰 Rekapitulasi Keuangan")
+    st.header(" Rekapitulasi Keuangan")
     
     if st.session_state.logbook_data:
         df_finance = pd.DataFrame(st.session_state.logbook_data)
@@ -169,4 +172,4 @@ with tab3:
         st.warning("Belum ada data keuangan. Masukkan data di tab Catatan Harian.")
 
 st.markdown("---")
-st.caption("💡 **Tips:** Lakukan pencatatan rutin setiap hari atau minimal seminggu sekali untuk hasil monitoring yang akurat.")
+st.caption(" **Tips:** Lakukan pencatatan rutin setiap hari atau minimal seminggu sekali untuk hasil monitoring yang akurat.")

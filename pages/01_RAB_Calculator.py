@@ -1,5 +1,5 @@
 """
-💰 RAB Calculator - Rencana Anggaran Biaya Budidaya Padi
+ RAB Calculator - Rencana Anggaran Biaya Budidaya Padi
 Comprehensive budget planning for rice cultivation
 """
 
@@ -7,27 +7,39 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
+import sys
+from pathlib import Path
+
+# Add utils to path
+if str(Path(__file__).parent.parent / "utils") not in sys.path:
+    sys.path.append(str(Path(__file__).parent.parent / "utils"))
+
+from design_system import apply_design_system, icon, COLORS
+
 # Page config
 st.set_page_config(
     page_title="RAB Calculator",
-    page_icon="💰",
+    page_icon="",
     layout="wide"
 )
 
+# Apply Design System
+apply_design_system()
+
 # Header
-st.title("💰 RAB Calculator - Budidaya Padi")
+st.title(f"{icon('calculator', size='lg')} RAB Calculator")
 st.markdown("**Hitung Rencana Anggaran Biaya budidaya padi secara detail**")
 st.markdown("---")
 
 # Tabs
-tab1, tab2, tab3 = st.tabs(["📝 Input Data", "📊 Hasil RAB", "📈 Analisis"])
+tab1, tab2, tab3 = st.tabs([" Input Data", " Hasil RAB", " Analisis"])
 
 # Initialize session state
 if 'rab_calculated' not in st.session_state:
     st.session_state.rab_calculated = False
 
 with tab1:
-    st.header("📝 Input Data Budidaya")
+    st.header(" Input Data Budidaya")
     
     col1, col2 = st.columns(2)
     
@@ -53,37 +65,37 @@ with tab1:
     st.markdown("---")
     
     # Cost inputs
-    st.subheader("💵 Rincian Biaya")
+    st.subheader(" Rincian Biaya")
     
     col_cost1, col_cost2 = st.columns(2)
     
     with col_cost1:
-        st.markdown("**🌱 Persiapan Lahan & Bibit**")
+        st.markdown("** Persiapan Lahan & Bibit**")
         biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=2000000, step=100000)
         biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=1500000, step=100000)
         biaya_persemaian = st.number_input("Persemaian (Rp/ha)", value=500000, step=50000)
         
-        st.markdown("**🧪 Pupuk**")
+        st.markdown("** Pupuk**")
         biaya_urea = st.number_input("Urea (Rp/ha)", value=1200000, step=50000)
         biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=1500000, step=50000)
         biaya_sp36 = st.number_input("SP-36 (Rp/ha)", value=600000, step=50000)
         biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=800000, step=50000)
     
     with col_cost2:
-        st.markdown("**💊 Pestisida & Herbisida**")
+        st.markdown("** Pestisida & Herbisida**")
         biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=1000000, step=50000)
         biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=500000, step=50000)
         
-        st.markdown("**👷 Tenaga Kerja**")
+        st.markdown("** Tenaga Kerja**")
         biaya_tanam = st.number_input("Tanam/Tabela (Rp/ha)", value=2000000, step=100000)
         biaya_pemeliharaan = st.number_input("Pemeliharaan (Rp/ha)", value=1500000, step=100000)
         biaya_panen = st.number_input("Panen & Pasca Panen (Rp/ha)", value=3000000, step=100000)
         
-        st.markdown("**💧 Irigasi & Lain-lain**")
+        st.markdown("** Irigasi & Lain-lain**")
         biaya_irigasi = st.number_input("Irigasi/Air (Rp/ha)", value=500000, step=50000)
         biaya_lainnya = st.number_input("Biaya Lain-lain (Rp/ha)", value=500000, step=50000)
     
-    if st.button("🧮 Hitung RAB", type="primary", use_container_width=True):
+    if st.button(" Hitung RAB", type="primary", use_container_width=True):
         st.session_state.rab_calculated = True
         
         # Calculate totals
@@ -122,10 +134,10 @@ with tab1:
             'roi': roi
         }
         
-        st.success("✅ RAB berhasil dihitung! Lihat hasil di tab 'Hasil RAB'")
+        st.success(" RAB berhasil dihitung! Lihat hasil di tab 'Hasil RAB'")
 
 with tab2:
-    st.header("📊 Hasil Rencana Anggaran Biaya")
+    st.header(" Hasil Rencana Anggaran Biaya")
     
     if st.session_state.rab_calculated:
         data = st.session_state.rab_data
@@ -149,7 +161,7 @@ with tab2:
         st.markdown("---")
         
         # Cost breakdown
-        st.subheader("💰 Rincian Biaya per Kategori")
+        st.subheader(" Rincian Biaya per Kategori")
         
         breakdown_df = pd.DataFrame({
             'Kategori': ['Persiapan Lahan & Bibit', 'Pupuk', 'Pestisida & Herbisida', 
@@ -187,7 +199,7 @@ with tab2:
             st.altair_chart(pie_chart, use_container_width=True)
         
         # Detailed table
-        st.subheader("📋 Tabel Lengkap RAB")
+        st.subheader(" Tabel Lengkap RAB")
         
         detailed_df = pd.DataFrame({
             'Item': [
@@ -225,32 +237,32 @@ with tab2:
         st.dataframe(detailed_df, use_container_width=True, hide_index=True)
         
         # Export button
-        if st.button("📥 Export ke Excel", use_container_width=True):
+        if st.button(" Export ke Excel", use_container_width=True):
             st.info("Feature export akan segera ditambahkan!")
     
     else:
-        st.info("👈 Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
+        st.info(" Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
 
 with tab3:
-    st.header("📈 Analisis Kelayakan")
+    st.header(" Analisis Kelayakan")
     
     if st.session_state.rab_calculated:
         data = st.session_state.rab_data
         
         # Profitability analysis
-        st.subheader("💹 Analisis Profitabilitas")
+        st.subheader(" Analisis Profitabilitas")
         
         if data['roi'] > 50:
-            st.success(f"✅ **Sangat Menguntungkan** - ROI {data['roi']:.1f}% sangat baik untuk budidaya padi")
+            st.success(f" **Sangat Menguntungkan** - ROI {data['roi']:.1f}% sangat baik untuk budidaya padi")
         elif data['roi'] > 30:
-            st.success(f"✅ **Menguntungkan** - ROI {data['roi']:.1f}% cukup baik")
+            st.success(f" **Menguntungkan** - ROI {data['roi']:.1f}% cukup baik")
         elif data['roi'] > 10:
-            st.warning(f"⚠️ **Cukup Menguntungkan** - ROI {data['roi']:.1f}% masih layak namun bisa dioptimalkan")
+            st.warning(f" **Cukup Menguntungkan** - ROI {data['roi']:.1f}% masih layak namun bisa dioptimalkan")
         else:
-            st.error(f"❌ **Kurang Menguntungkan** - ROI {data['roi']:.1f}% perlu evaluasi ulang")
+            st.error(f" **Kurang Menguntungkan** - ROI {data['roi']:.1f}% perlu evaluasi ulang")
         
         # Break-even analysis
-        st.subheader("⚖️ Break-Even Analysis")
+        st.subheader(" Break-Even Analysis")
         
         biaya_per_kg = data['total_biaya'] / data['total_produksi']
         break_even_price = biaya_per_kg
@@ -268,31 +280,31 @@ with tab3:
             st.metric("Margin per kg", f"Rp {margin:,.0f}")
         
         # Recommendations
-        st.subheader("💡 Rekomendasi")
+        st.subheader(" Rekomendasi")
         
         recommendations = []
         
         if data['total_pupuk']/data['total_biaya'] > 0.25:
-            recommendations.append("🧪 Biaya pupuk tinggi (>25%). Pertimbangkan pupuk organik atau beli dalam jumlah besar")
+            recommendations.append(" Biaya pupuk tinggi (>25%). Pertimbangkan pupuk organik atau beli dalam jumlah besar")
         
         if data['total_tenaga_kerja']/data['total_biaya'] > 0.35:
-            recommendations.append("👷 Biaya tenaga kerja tinggi (>35%). Pertimbangkan mekanisasi atau sistem bagi hasil")
+            recommendations.append(" Biaya tenaga kerja tinggi (>35%). Pertimbangkan mekanisasi atau sistem bagi hasil")
         
         if data['roi'] < 30:
-            recommendations.append("📈 ROI masih rendah. Tingkatkan produktivitas atau cari pasar dengan harga lebih baik")
+            recommendations.append(" ROI masih rendah. Tingkatkan produktivitas atau cari pasar dengan harga lebih baik")
         
         if biaya_per_kg > 4000:
-            recommendations.append("💰 Biaya produksi per kg tinggi. Lakukan efisiensi di semua aspek")
+            recommendations.append(" Biaya produksi per kg tinggi. Lakukan efisiensi di semua aspek")
         
         if recommendations:
             for rec in recommendations:
                 st.info(rec)
         else:
-            st.success("✅ Rencana budidaya Anda sudah optimal!")
+            st.success(" Rencana budidaya Anda sudah optimal!")
     
     else:
-        st.info("👈 Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
+        st.info(" Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
 
 # Footer
 st.markdown("---")
-st.caption("💡 **Tips:** Selalu update harga sesuai kondisi pasar terkini untuk hasil RAB yang akurat")
+st.caption(" **Tips:** Selalu update harga sesuai kondisi pasar terkini untuk hasil RAB yang akurat")

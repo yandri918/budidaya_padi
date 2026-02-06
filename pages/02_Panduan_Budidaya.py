@@ -1,5 +1,5 @@
 """
-📚 Panduan Budidaya Padi - Complete Rice Cultivation Guide
+ Panduan Budidaya Padi - Complete Rice Cultivation Guide
 Step-by-step guide for successful rice farming
 """
 
@@ -7,25 +7,37 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
+import sys
+from pathlib import Path
+
+# Add utils to path
+if str(Path(__file__).parent.parent / "utils") not in sys.path:
+    sys.path.append(str(Path(__file__).parent.parent / "utils"))
+
+from design_system import apply_design_system, icon, COLORS
+
 # Page config
 st.set_page_config(
     page_title="Panduan Budidaya Padi",
-    page_icon="📚",
+    page_icon="",
     layout="wide"
 )
 
+# Apply Design System
+apply_design_system()
+
 # Header
-st.title("📚 Panduan Budidaya Padi")
+st.title(f"{icon('book-open', size='lg')} Panduan Budidaya")
 st.markdown("**Panduan lengkap budidaya padi dari persiapan hingga panen**")
 st.markdown("---")
 
 # Tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "🌱 Persiapan", "🌾 Penanaman", "🔧 Pemeliharaan", "🌾 Panen", "📊 Timeline"
+    " Persiapan", " Penanaman", " Pemeliharaan", " Panen", " Timeline"
 ])
 
 with tab1:
-    st.header("🌱 Persiapan Lahan & Bibit")
+    st.header(" Persiapan Lahan & Bibit")
     
     col1, col2 = st.columns(2)
     
@@ -49,7 +61,7 @@ with tab1:
            - Ratakan dengan tanah
         """)
         
-        st.info("💡 **Tips:** Pengolahan tanah yang baik menentukan 50% keberhasilan budidaya!")
+        st.info(" **Tips:** Pengolahan tanah yang baik menentukan 50% keberhasilan budidaya!")
     
     with col2:
         st.subheader("2. Persiapan Bibit")
@@ -72,13 +84,13 @@ with tab1:
            - Siap tanam umur 18-25 hari
         """)
         
-        st.success("✅ Bibit siap tanam: tinggi 20-25 cm, 4-5 daun")
+        st.success(" Bibit siap tanam: tinggi 20-25 cm, 4-5 daun")
 
 with tab2:
-    st.header("🌾 Penanaman")
+    st.header(" Penanaman")
     
     # Planting methods comparison
-    st.subheader("📊 Perbandingan Metode Tanam")
+    st.subheader(" Perbandingan Metode Tanam")
     
     methods_df = pd.DataFrame({
         'Metode': ['Transplanting', 'Direct Seeding', 'SRI', 'Jajar Legowo'],
@@ -94,48 +106,48 @@ with tab2:
     
     with col_method1:
         st.markdown("""
-        **🌱 Transplanting**
+        ** Transplanting**
         - Jarak: 25x25 cm
         - 2-3 bibit/lubang
         - Umur: 18-25 hari
         
-        ✅ Paling umum
+         Paling umum
         """)
     
     with col_method2:
         st.markdown("""
-        **🌾 Direct Seeding**
+        ** Direct Seeding**
         - Benih langsung
         - Tanpa persemaian
         - Hemat tenaga
         
-        ✅ Lahan luas
+         Lahan luas
         """)
     
     with col_method3:
         st.markdown("""
-        **🌿 SRI**
+        ** SRI**
         - Bibit muda 8-12 hari
         - 1 bibit/lubang
         - Jarak: 30x30 cm
         
-        ✅ Hemat air
+         Hemat air
         """)
     
     with col_method4:
         st.markdown("""
-        **🌾 Jajar Legowo**
+        ** Jajar Legowo**
         - Sistem baris
         - Populasi tinggi
         - Produktivitas ++
         
-        ✅ Hasil maksimal
+         Hasil maksimal
         """)
     
     st.markdown("---")
     
     # Jajar Legowo Calculator
-    st.subheader("🧮 Kalkulator Jajar Legowo")
+    st.subheader(" Kalkulator Jajar Legowo")
     
     col_jl1, col_jl2 = st.columns(2)
     
@@ -162,7 +174,7 @@ with tab2:
         bulir_per_malai = st.number_input("Bulir per Malai", 80, 200, 120, 5, help="Jumlah bulir per malai")
         berat_1000_bulir = st.number_input("Berat 1000 Bulir (gram)", 20.0, 35.0, 27.0, 0.5, help="Berat 1000 butir gabah")
     
-    if st.button("🧮 Hitung Populasi & Potensi Hasil", type="primary", key="calc_jl"):
+    if st.button(" Hitung Populasi & Potensi Hasil", type="primary", key="calc_jl"):
         # Parse system
         if "2:1" in jl_system and "25x12.5" in jl_system:
             jarak_dalam = 25  # cm
@@ -218,7 +230,7 @@ with tab2:
         # Per hectare
         hasil_per_ha = total_berat_ton / luas_lahan_jl
         
-        st.success("✅ Perhitungan Selesai!")
+        st.success(" Perhitungan Selesai!")
         
         col_res1, col_res2, col_res3 = st.columns(3)
         
@@ -236,7 +248,7 @@ with tab2:
         
         # Detailed breakdown
         st.markdown("---")
-        st.subheader("📊 Rincian Perhitungan")
+        st.subheader(" Rincian Perhitungan")
         
         breakdown = pd.DataFrame({
             'Parameter': [
@@ -272,7 +284,7 @@ with tab2:
         st.dataframe(breakdown, use_container_width=True, hide_index=True)
         
         st.info(f"""
-        💡 **Keunggulan Jajar Legowo {jl_system.split()[1]}:**
+         **Keunggulan Jajar Legowo {jl_system.split()[1]}:**
         - Populasi {((populasi_per_ha / 160000) * 100):.0f}% dari sistem konvensional (25x25 cm)
         - Tanaman pinggir lebih banyak (efek tepi)
         - Sirkulasi udara lebih baik
@@ -282,9 +294,9 @@ with tab2:
 
 
 with tab3:
-    st.header("🔧 Pemeliharaan Tanaman")
+    st.header(" Pemeliharaan Tanaman")
     
-    st.subheader("💧 Pengairan")
+    st.subheader(" Pengairan")
     st.markdown("""
     **Fase Vegetatif (0-60 HST):**
     - Genangan 3-5 cm
@@ -298,12 +310,12 @@ with tab3:
     - Kurangi air bertahap
     - Keringkan 2 minggu sebelum panen
     
-    💡 **AWD (Alternate Wetting & Drying):** Hemat air 30% tanpa kurangi hasil!
+     **AWD (Alternate Wetting & Drying):** Hemat air 30% tanpa kurangi hasil!
     """)
     
     st.markdown("---")
     
-    st.subheader("🧪 Pemupukan")
+    st.subheader(" Pemupukan")
     
     fertilizer_schedule = pd.DataFrame({
         'Waktu': ['0 HST (Dasar)', '10-15 HST', '30-35 HST', '50-55 HST'],
@@ -336,7 +348,7 @@ with tab3:
     
     st.markdown("---")
     
-    st.subheader("🐛 Pengendalian Hama & Penyakit")
+    st.subheader(" Pengendalian Hama & Penyakit")
     
     col_pest1, col_pest2 = st.columns(2)
     
@@ -373,12 +385,12 @@ with tab3:
         """)
 
 with tab4:
-    st.header("🌾 Panen & Pasca Panen")
+    st.header(" Panen & Pasca Panen")
     
     col_harvest1, col_harvest2 = st.columns(2)
     
     with col_harvest1:
-        st.subheader("🌾 Panen")
+        st.subheader(" Panen")
         st.markdown("""
         **Waktu Panen yang Tepat:**
         - Umur: 110-150 hari (tergantung varietas)
@@ -392,11 +404,11 @@ with tab4:
         3. Perontokan segera (max 24 jam)
         4. Hindari kehilangan hasil
         
-        ⚠️ **Jangan terlambat panen:** Gabah rontok, kualitas turun!
+         **Jangan terlambat panen:** Gabah rontok, kualitas turun!
         """)
     
     with col_harvest2:
-        st.subheader("📦 Pasca Panen")
+        st.subheader(" Pasca Panen")
         st.markdown("""
         **Pengeringan:**
         - Target kadar air: 14%
@@ -417,7 +429,7 @@ with tab4:
         """)
     
     # Yield calculation
-    st.subheader("📊 Estimasi Hasil")
+    st.subheader(" Estimasi Hasil")
     
     col_yield1, col_yield2, col_yield3 = st.columns(3)
     
@@ -442,7 +454,7 @@ with tab4:
         st.metric("Total Beras", f"{beras_total:,.0f} kg")
 
 with tab5:
-    st.header("📊 Timeline Budidaya Padi")
+    st.header(" Timeline Budidaya Padi")
     
     # Create timeline data
     timeline_data = pd.DataFrame({
@@ -468,7 +480,7 @@ with tab5:
     st.altair_chart(gantt, use_container_width=True)
     
     # Detailed schedule
-    st.subheader("📅 Jadwal Detail per Fase")
+    st.subheader(" Jadwal Detail per Fase")
     
     schedule_detail = pd.DataFrame({
         'Fase': ['Persiapan Lahan', 'Persemaian', 'Tanam', 'Vegetatif', 
@@ -491,7 +503,7 @@ with tab5:
 # Footer
 st.markdown("---")
 st.success("""
-💡 **Tips Sukses Budidaya Padi:**
+ **Tips Sukses Budidaya Padi:**
 1. Pilih varietas sesuai kondisi lahan
 2. Persiapan lahan yang baik
 3. Pemupukan berimbang

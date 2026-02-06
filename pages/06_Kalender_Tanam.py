@@ -1,5 +1,5 @@
 """
-📅 Kalender Tanam - Rice Planting Calendar
+ Kalender Tanam - Rice Planting Calendar
 Season-based planting recommendations
 """
 
@@ -8,16 +8,19 @@ import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
 
-st.set_page_config(page_title="Kalender Tanam", page_icon="📅", layout="wide")
+st.set_page_config(page_title="Kalender Tanam", page_icon="", layout="wide")
 
-st.title("📅 Kalender Tanam Padi")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('calendar-alt', size='lg')} Kalender Tanam")
 st.markdown("**Rekomendasi waktu tanam berdasarkan musim dan pola hujan**")
 st.markdown("---")
 
-tab1, tab2, tab3 = st.tabs(["📅 Kalender", "🌧️ Pola Musim", "📊 Rekomendasi"])
+tab1, tab2, tab3 = st.tabs([" Kalender", " Pola Musim", " Rekomendasi"])
 
 with tab1:
-    st.header("📅 Kalender Tanam Padi")
+    st.header(" Kalender Tanam Padi")
     
     # Input
     col1, col2 = st.columns(2)
@@ -39,7 +42,7 @@ with tab1:
     st.markdown("---")
     
     # Planting calendar
-    st.subheader("🗓️ Jadwal Tanam Optimal")
+    st.subheader(" Jadwal Tanam Optimal")
     
     # --- PRANATA MANGSA LOGIC ---
     def get_pranata_mangsa(date):
@@ -47,29 +50,29 @@ with tab1:
         month = date.month
         
         if (month == 6 and day >= 22) or (month == 8 and day <= 1):
-            return "Kasa (I)", "Masa kering, daun gugur, belalang bertelur. Mulai olah tanah kering.", "🌤️ Kering"
+            return "Kasa (I)", "Masa kering, daun gugur, belalang bertelur. Mulai olah tanah kering.", " Kering"
         elif (month == 8 and day >= 2) or (month == 8 and day <= 24):
-            return "Karo (II)", "Tanah merekah, pohon randu bersemi. Persiapan palawija.", "🌤️ Kering/Pancaroba"
+            return "Karo (II)", "Tanah merekah, pohon randu bersemi. Persiapan palawija.", " Kering/Pancaroba"
         elif (month == 8 and day >= 25) or (month == 9 and day <= 17):
-            return "Katelu (III)", "Sumur kering, angin kencang. Panen palawija.", "☀️ Kering Panas"
+            return "Katelu (III)", "Sumur kering, angin kencang. Panen palawija.", " Kering Panas"
         elif (month == 9 and day >= 18) or (month == 10 and day <= 13):
-            return "Kapat (IV)", "Mata air mulai basah, hujan pertama (labuh). Persiapan persemaian.", "🌦️ Labuh (Hujan Awal)"
+            return "Kapat (IV)", "Mata air mulai basah, hujan pertama (labuh). Persiapan persemaian.", " Labuh (Hujan Awal)"
         elif (month == 10 and day >= 14) or (month == 11 and day <= 8):
-            return "Kalima (V)", "Hujan mulai sering, selokan air mengalir. Waktu Tanam Padi Utama.", "🌧️ Hujan Mulai Stabil"
+            return "Kalima (V)", "Hujan mulai sering, selokan air mengalir. Waktu Tanam Padi Utama.", " Hujan Mulai Stabil"
         elif (month == 11 and day >= 9) or (month == 12 and day <= 21):
-            return "Kanem (VI)", "Musim buah-buahan. Hujan lebat. Tanam padi terus berlangsung.", "🌧️ Hujan Lebat"
+            return "Kanem (VI)", "Musim buah-buahan. Hujan lebat. Tanam padi terus berlangsung.", " Hujan Lebat"
         elif (month == 12 and day >= 22) or (month == 2 and day <= 2):
-            return "Kapitu (VII)", "Banjir, angin ribut. Puncak musim hujan. Perawatan tanaman.", "⛈️ Puncak Hujan"
+            return "Kapitu (VII)", "Banjir, angin ribut. Puncak musim hujan. Perawatan tanaman.", " Puncak Hujan"
         elif (month == 2 and day >= 3) or (month == 2 and day <= 28): # Simplified Feb
-            return "Kawolu (VIII)", "Padi bunting, ulat banyak. Mulai sedikit panas.", "🌦️ Hujan Berkurang"
+            return "Kawolu (VIII)", "Padi bunting, ulat banyak. Mulai sedikit panas.", " Hujan Berkurang"
         elif (month == 3 and day >= 1) or (month == 3 and day <= 25):
-            return "Kasanga (IX)", "Bunyi garengpung. Padi mulai tua. Menjelang panen.", "🌤️ Pancaroba Akhir"
+            return "Kasanga (IX)", "Bunyi garengpung. Padi mulai tua. Menjelang panen.", " Pancaroba Akhir"
         elif (month == 3 and day >= 26) or (month == 4 and day <= 18):
-            return "Kadasa (X)", "Padi menguning, banyak burung. Panen Raya.", "☀️ Mareng (Kering Awal)"
+            return "Kadasa (X)", "Padi menguning, banyak burung. Panen Raya.", " Mareng (Kering Awal)"
         elif (month == 4 and day >= 19) or (month == 5 and day <= 11):
-            return "Desta (XI)", "Suhu dingin di malam hari. Panen palawija.", "☀️ Kering"
+            return "Desta (XI)", "Suhu dingin di malam hari. Panen palawija.", " Kering"
         else: # (month == 5 and day >= 12) or (month == 6 and day <= 21)
-            return "Sada (XII)", "Suhu dingin siang hari. Jemur gabah.", "☀️ Kering Dingin"
+            return "Sada (XII)", "Suhu dingin siang hari. Jemur gabah.", " Kering Dingin"
 
     today = datetime.now()
     mangsa_name, mangsa_desc, mangsa_weather = get_pranata_mangsa(today)
@@ -83,12 +86,12 @@ with tab1:
     today_pasaran = pasaran_list[delta_days % 5]
     
     recommendation_primbon = ""
-    if today_pasaran == "Legi": recommendation_primbon = "✅ Baik untuk Tanam (Manis/Subur)"
-    elif today_pasaran == "Wage": recommendation_primbon = "⚠️ Kurang Baik (Kering/Gagal)"
-    else: recommendation_primbon = "⚪ Netral"
+    if today_pasaran == "Legi": recommendation_primbon = " Baik untuk Tanam (Manis/Subur)"
+    elif today_pasaran == "Wage": recommendation_primbon = " Kurang Baik (Kering/Gagal)"
+    else: recommendation_primbon = " Netral"
 
     # Display Kearifan Lokal
-    st.markdown("### 🏺 Kearifan Lokal (Pranata Mangsa & Primbon)")
+    st.markdown("###  Kearifan Lokal (Pranata Mangsa & Primbon)")
     col_k1, col_k2 = st.columns(2)
     with col_k1:
         st.info(f"**Mangsa Saat Ini:** {mangsa_name}")
@@ -100,7 +103,7 @@ with tab1:
     st.markdown("---")
     
     if "Teknis" in irrigation:
-        st.success("✅ **Irigasi Teknis:** Dapat tanam 2-3x per tahun")
+        st.success(" **Irigasi Teknis:** Dapat tanam 2-3x per tahun")
         
         calendar_df = pd.DataFrame({
             'Musim Tanam': ['MT I (Musim Hujan)', 'MT II (Pancaroba)', 'MT III (Kemarau)'],
@@ -111,7 +114,7 @@ with tab1:
         })
     
     elif "Sederhana" in irrigation:
-        st.warning("⚠️ **Irigasi Sederhana:** Dapat tanam 2x per tahun")
+        st.warning(" **Irigasi Sederhana:** Dapat tanam 2x per tahun")
         
         calendar_df = pd.DataFrame({
             'Musim Tanam': ['MT I (Musim Hujan)', 'MT II (Pancaroba)'],
@@ -122,7 +125,7 @@ with tab1:
         })
     
     else:  # Tadah Hujan
-        st.info("💧 **Tadah Hujan:** Hanya 1x per tahun (musim hujan)")
+        st.info(" **Tadah Hujan:** Hanya 1x per tahun (musim hujan)")
         
         calendar_df = pd.DataFrame({
             'Musim Tanam': ['MT I (Musim Hujan)'],
@@ -135,7 +138,7 @@ with tab1:
     st.dataframe(calendar_df, use_container_width=True, hide_index=True)
     
     # Timeline visualization
-    st.subheader("📊 Timeline Tanam-Panen")
+    st.subheader(" Timeline Tanam-Panen")
     
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
     
@@ -176,7 +179,7 @@ with tab1:
         st.altair_chart(chart, use_container_width=True)
 
 with tab2:
-    st.header("🌧️ Pola Musim Indonesia")
+    st.header(" Pola Musim Indonesia")
     
     st.markdown("""
     ### Karakteristik Musim
@@ -225,9 +228,9 @@ with tab2:
     st.altair_chart(rainfall_chart, use_container_width=True)
 
 with tab3:
-    st.header("📊 Rekomendasi Tanam")
+    st.header(" Rekomendasi Tanam")
     
-    st.subheader("✅ Waktu Tanam Terbaik")
+    st.subheader(" Waktu Tanam Terbaik")
     
     col_rec1, col_rec2 = st.columns(2)
     
@@ -245,7 +248,7 @@ with tab3:
         - Harga jual rendah (panen massal)
         
         **Rekomendasi:**
-        ✅ Sangat direkomendasikan untuk semua jenis irigasi
+         Sangat direkomendasikan untuk semua jenis irigasi
         """)
     
     with col_rec2:
@@ -261,12 +264,12 @@ with tab3:
         - Produktivitas sedikit turun
         
         **Rekomendasi:**
-        ✅ Direkomendasikan untuk irigasi teknis/sederhana
+         Direkomendasikan untuk irigasi teknis/sederhana
         """)
     
     st.markdown("---")
     
-    st.subheader("💡 Tips Pemilihan Waktu Tanam")
+    st.subheader(" Tips Pemilihan Waktu Tanam")
     
     tips = [
         "**Tanam serentak** dalam satu hamparan untuk kendalikan hama",
@@ -281,4 +284,4 @@ with tab3:
         st.info(tip)
 
 st.markdown("---")
-st.success("💡 **Kesimpulan:** Waktu tanam optimal adalah Oktober-November (MT I) untuk semua jenis irigasi")
+st.success(" **Kesimpulan:** Waktu tanam optimal adalah Oktober-November (MT I) untuk semua jenis irigasi")

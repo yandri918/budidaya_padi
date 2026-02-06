@@ -1,5 +1,5 @@
 """
-💧 Manajemen Air Padi - Water Management
+ Manajemen Air Padi - Water Management
 Calculator for Intermittent Irrigation (AWD - Alternate Wetting and Drying)
 """
 
@@ -7,28 +7,31 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.set_page_config(page_title="Manajemen Air", page_icon="💧", layout="wide")
+st.set_page_config(page_title="Manajemen Air", page_icon="", layout="wide")
 
-st.title("💧 Manajemen Air Padi")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('tint', size='lg')} Manajemen Air")
 st.markdown("**Pengelolaan air irigasi padi sawah (System of Rice Intensification / AWD)**")
 st.markdown("---")
 
 # Information Section
-with st.expander("💡 Apa itu Pengairan Berselang (Intermittent Irrigation)?", expanded=True):
+with st.expander(" Apa itu Pengairan Berselang (Intermittent Irrigation)?", expanded=True):
     st.markdown("""
     **Pengairan Berselang (Alternate Wetting and Drying / AWD)** adalah teknik pengaturan air sawah 
     dimana lahan dikeringkan dan digenangi secara bergantian.
     
     **Manfaat:**
-    1. 🌾 Hemat air irigasi hingga 30%
-    2. 💨 Akar mendapatkan oksigen lebih baik (aerasi)
-    3. 💪 Batang lebih kokoh, mengurangi risiko rebah
-    4. 🐀 Mengurangi populasi hama (wereng keong mas)
-    5. 🦠 Mengurangi emisi gas metana
+    1.  Hemat air irigasi hingga 30%
+    2.  Akar mendapatkan oksigen lebih baik (aerasi)
+    3.  Batang lebih kokoh, mengurangi risiko rebah
+    4.  Mengurangi populasi hama (wereng keong mas)
+    5.  Mengurangi emisi gas metana
     """)
 
 # Calculator Section
-st.header("🧮 Kalkulator Kebutuhan Air")
+st.header(" Kalkulator Kebutuhan Air")
 
 col1, col2 = st.columns(2)
 
@@ -91,11 +94,11 @@ with col2:
     # Display Result
     st.info(f"**Fase:** {fase}")
     st.metric("Target Tinggi Air", f"{rekomendasi_cm} cm", f"{status_air}")
-    st.warning(f"💡 **Tips:** {tips}")
+    st.warning(f" **Tips:** {tips}")
 
 # Visualization
 st.markdown("---")
-st.header("📊 Jadwal Pengairan Satu Musim")
+st.header(" Jadwal Pengairan Satu Musim")
 
 # Generate Data for Chart
 schedule_data = []
@@ -135,7 +138,7 @@ st.altair_chart(chart, use_container_width=True)
 
 # Volume Calculator
 st.markdown("---")
-st.subheader("💧 Estimasi Volume Air Irigasi")
+st.subheader(" Estimasi Volume Air Irigasi")
 
 vol_m3 = (luas_lahan * (rekomendasi_cm / 100))
 # Add factor for soil absorption/evaporation

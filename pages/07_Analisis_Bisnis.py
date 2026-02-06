@@ -1,5 +1,5 @@
 """
-📊 Analisis Bisnis - Business Analysis for Rice Farming
+ Analisis Bisnis - Business Analysis for Rice Farming
 Profitability, ROI, and financial analysis
 """
 
@@ -8,13 +8,16 @@ import pandas as pd
 import altair as alt
 import numpy as np
 
-st.set_page_config(page_title="Analisis Bisnis", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Analisis Bisnis", page_icon="", layout="wide")
 
-st.title("📊 Analisis Bisnis Budidaya Padi")
+# Apply Design System
+apply_design_system()
+
+st.title(f"{icon('chart-line', size='lg')} Analisis Bisnis")
 st.markdown("**Analisis kelayakan usaha dan profitabilitas**")
 st.markdown("---")
 
-tab1, tab2, tab3 = st.tabs(["💰 Input", "📈 Analisis", "📊 Proyeksi"])
+tab1, tab2, tab3 = st.tabs([" Input", " Analisis", " Proyeksi"])
 
 with tab1:
     col1, col2 = st.columns(2)
@@ -31,7 +34,7 @@ with tab1:
         harga_jual = st.number_input("Harga Jual (Rp/kg)", 3000, 10000, 5500, 100)
         siklus_per_tahun = st.number_input("Siklus/Tahun", 1, 3, 2, 1)
     
-    if st.button("📊 Analisis", type="primary"):
+    if st.button(" Analisis", type="primary"):
         # Calculations
         total_biaya = biaya_produksi * luas_lahan
         total_produksi = produktivitas * luas_lahan * 1000
@@ -53,10 +56,10 @@ with tab1:
             'payback': payback,
             'siklus': siklus_per_tahun
         }
-        st.success("✅ Analisis selesai!")
+        st.success(" Analisis selesai!")
 
 with tab2:
-    st.header("📈 Hasil Analisis")
+    st.header(" Hasil Analisis")
     
     if 'business_data' in st.session_state:
         data = st.session_state.business_data
@@ -70,16 +73,16 @@ with tab2:
         st.markdown("---")
         
         # Profitability
-        st.subheader("💹 Analisis Profitabilitas")
+        st.subheader(" Analisis Profitabilitas")
         
         if data['roi'] > 50:
-            st.success(f"✅ Sangat Menguntungkan - ROI {data['roi']:.1f}%")
+            st.success(f" Sangat Menguntungkan - ROI {data['roi']:.1f}%")
         elif data['roi'] > 30:
-            st.success(f"✅ Menguntungkan - ROI {data['roi']:.1f}%")
+            st.success(f" Menguntungkan - ROI {data['roi']:.1f}%")
         elif data['roi'] > 10:
-            st.warning(f"⚠️ Cukup Menguntungkan - ROI {data['roi']:.1f}%")
+            st.warning(f" Cukup Menguntungkan - ROI {data['roi']:.1f}%")
         else:
-            st.error(f"❌ Kurang Menguntungkan - ROI {data['roi']:.1f}%")
+            st.error(f" Kurang Menguntungkan - ROI {data['roi']:.1f}%")
         
         col_pay1, col_pay2 = st.columns(2)
         col_pay1.metric("Keuntungan/Tahun", f"Rp {data['keuntungan_tahunan']:,.0f}")
@@ -103,7 +106,7 @@ with tab2:
         st.info("Input data di tab pertama")
 
 with tab3:
-    st.header("📊 Proyeksi 5 Tahun")
+    st.header(" Proyeksi 5 Tahun")
     
     if 'business_data' in st.session_state:
         data = st.session_state.business_data
@@ -136,4 +139,4 @@ with tab3:
         st.info("Input data di tab pertama")
 
 st.markdown("---")
-st.info("💡 Analisis ini bersifat estimasi. Hasil aktual dapat bervariasi tergantung kondisi lapangan.")
+st.info(" Analisis ini bersifat estimasi. Hasil aktual dapat bervariasi tergantung kondisi lapangan.")

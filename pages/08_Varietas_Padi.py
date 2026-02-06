@@ -1,5 +1,5 @@
 """
-🌾 Varietas Padi - Rice Varieties Database
+ Varietas Padi - Rice Varieties Database
 Comprehensive database of Indonesian rice varieties with comparison tools
 """
 
@@ -8,28 +8,40 @@ import pandas as pd
 import altair as alt
 from data.rice_varieties import RICE_VARIETIES, get_all_varieties, get_varieties_by_region, compare_varieties
 
+import sys
+from pathlib import Path
+
+# Add utils to path
+if str(Path(__file__).parent.parent / "utils") not in sys.path:
+    sys.path.append(str(Path(__file__).parent.parent / "utils"))
+
+from design_system import apply_design_system, icon, COLORS
+
 # Page config
 st.set_page_config(
     page_title="Varietas Padi",
-    page_icon="🌾",
+    page_icon="",
     layout="wide"
 )
 
+# Apply Design System
+apply_design_system()
+
 # Header
-st.title("🌾 Varietas Padi Indonesia")
+st.title(f"{icon('seedling', size='lg')} Varietas Padi")
 st.markdown("**Database lengkap varietas padi unggul untuk kondisi Indonesia**")
 st.markdown("---")
 
 # Tabs
-tab1, tab2, tab3 = st.tabs(["📚 Database Varietas", "🔍 Pencarian & Filter", "📊 Perbandingan"])
+tab1, tab2, tab3 = st.tabs([" Database Varietas", " Pencarian & Filter", " Perbandingan"])
 
 # TAB 1: Database
 with tab1:
-    st.header("📚 Database Varietas Padi")
+    st.header(" Database Varietas Padi")
     
     # Display all varieties
     for variety_name, variety_data in RICE_VARIETIES.items():
-        with st.expander(f"🌾 {variety_data['name']}", expanded=False):
+        with st.expander(f" {variety_data['name']}", expanded=False):
             col1, col2, col3 = st.columns(3)
             
             with col1:
@@ -62,7 +74,7 @@ with tab1:
 
 # TAB 2: Search & Filter
 with tab2:
-    st.header("🔍 Pencarian & Filter Varietas")
+    st.header(" Pencarian & Filter Varietas")
     
     col_filter1, col_filter2 = st.columns(2)
     
@@ -105,7 +117,7 @@ with tab2:
 
 # TAB 3: Comparison
 with tab3:
-    st.header("📊 Perbandingan Varietas")
+    st.header(" Perbandingan Varietas")
     
     # Select varieties to compare
     st.subheader("Pilih Varietas untuk Dibandingkan")
@@ -134,7 +146,7 @@ with tab3:
         st.dataframe(comparison_df, use_container_width=True, hide_index=True)
         
         # Altair charts
-        st.subheader("📊 Visualisasi Perbandingan")
+        st.subheader(" Visualisasi Perbandingan")
         
         col_chart1, col_chart2 = st.columns(2)
         
@@ -167,7 +179,7 @@ with tab3:
             st.altair_chart(duration_chart, use_container_width=True)
         
         # Price range chart
-        st.subheader("💰 Perbandingan Harga Pasar")
+        st.subheader(" Perbandingan Harga Pasar")
         
         price_chart = alt.Chart(comparison_df).mark_bar().encode(
             x=alt.X('Varietas:N', title='Varietas'),
@@ -183,12 +195,12 @@ with tab3:
         st.altair_chart(price_chart, use_container_width=True)
         
         # Detailed comparison
-        st.subheader("📋 Perbandingan Detail")
+        st.subheader(" Perbandingan Detail")
         
         for variety_name in selected_varieties:
             variety_data = RICE_VARIETIES[variety_name]
             
-            with st.expander(f"🌾 {variety_data['name']}", expanded=False):
+            with st.expander(f" {variety_data['name']}", expanded=False):
                 col1, col2 = st.columns(2)
                 
                 with col1:
@@ -211,7 +223,7 @@ with tab3:
 # Footer
 st.markdown("---")
 st.info("""
-💡 **Tips Memilih Varietas:**
+ **Tips Memilih Varietas:**
 1. Sesuaikan dengan kondisi lahan dan iklim regional
 2. Pertimbangkan umur tanam untuk pola tanam yang diinginkan
 3. Pilih varietas dengan ketahanan terhadap hama/penyakit lokal
