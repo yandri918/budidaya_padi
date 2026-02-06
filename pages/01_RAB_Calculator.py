@@ -1,11 +1,13 @@
 """
- RAB Calculator - Rencana Anggaran Biaya Budidaya Padi
-Comprehensive budget planning for rice cultivation
+RAB Calculator - Advanced Rice Cultivation Budget Planning
+Comprehensive budget planning with scenario comparison, cash flow, and analytics
 """
 
 import streamlit as st
 import pandas as pd
 import altair as alt
+import numpy as np
+from datetime import datetime, timedelta
 
 import sys
 from pathlib import Path
@@ -22,8 +24,8 @@ except ImportError:
 
 # Page config
 st.set_page_config(
-    page_title="RAB Calculator",
-    page_icon="",
+    page_title="RAB Calculator Advanced",
+    page_icon="💰",
     layout="wide"
 )
 
@@ -31,284 +33,579 @@ st.set_page_config(
 apply_design_system()
 
 # Header
-st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('calculator', size='lg')} RAB Calculator</h1>", unsafe_allow_html=True)
-st.markdown("**Hitung Rencana Anggaran Biaya budidaya padi secara detail**")
+st.markdown(f"<h1 style='margin-bottom: 0;'>{icon('calculator', size='lg')} RAB Calculator - Advanced</h1>", unsafe_allow_html=True)
+st.markdown("**Perencanaan Anggaran Budidaya Padi dengan Analisis Komprehensif**")
 st.markdown("---")
 
-# Tabs
-tab1, tab2, tab3 = st.tabs([" Input Data", " Hasil RAB", " Analisis"])
-
 # Initialize session state
-if 'rab_calculated' not in st.session_state:
-    st.session_state.rab_calculated = False
+if 'scenarios' not in st.session_state:
+    st.session_state.scenarios = {}
+if 'active_scenario' not in st.session_state:
+    st.session_state.active_scenario = "Skenario 1"
 
-with tab1:
-    st.header(" Input Data Budidaya")
+# Sidebar for scenario management
+with st.sidebar:
+    st.markdown(f"### {icon('folder')} Manajemen Skenario")
     
-    col1, col2 = st.columns(2)
+    # Scenario selector
+    scenario_names = list(st.session_state.scenarios.keys()) if st.session_state.scenarios else ["Skenario 1"]
+    selected_scenario = st.selectbox("Pilih Skenario", scenario_names, key="scenario_selector")
+    st.session_state.active_scenario = selected_scenario
+    
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("➕ Baru", use_container_width=True):
+            new_num = len(st.session_state.scenarios) + 1
+            st.session_state.active_scenario = f"Skenario {new_num}"
+            st.rerun()
+    
+    with col_btn2:
+        if st.button("🗑️ Hapus", use_container_width=True, disabled=len(st.session_state.scenarios) <= 1):
+            if st.session_state.active_scenario in st.session_state.scenarios:
+                del st.session_state.scenarios[st.session_state.active_scenario]
+                st.session_state.active_scenario = list(st.session_state.scenarios.keys())[0] if st.session_state.scenarios else "Skenario 1"
+                st.rerun()
+    
+    st.markdown("---")
+    st.markdown(f"### {icon('cog')} Mode Input")
+    input_mode = st.radio("", ["Simple", "Detail"], horizontal=True)
+
+# Main tabs
+tab1, tab2, tab3, tab4 = st.tabs([
+    f"{icon('edit')} Input Data",
+    f"{icon('chart-bar')} Hasil RAB",
+    f"{icon('chart-line')} Analisis",
+    f"{icon('download')} Export"
+])
+
+# ==================== TAB 1: INPUT DATA ====================
+with tab1:
+    st.markdown(f"### {icon('seedling')} Skenario: {st.session_state.active_scenario}")
+    
+    # Basic Information
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.subheader("Informasi Lahan")
-        luas_lahan = st.number_input("Luas Lahan (ha)", min_value=0.1, max_value=100.0, value=1.0, step=0.1)
-        varietas = st.selectbox("Varietas Padi", ["IR64", "Ciherang", "Inpari 32", "Inpari 42", "Mekongga"])
-        metode_tanam = st.selectbox("Metode Tanam", [
-            "Transplanting (Pindah Tanam)", 
-            "Direct Seeding (Tabela)", 
-            "SRI (System of Rice Intensification)",
-            "Jajar Legowo 2:1",
-            "Jajar Legowo 3:1",
-            "Jajar Legowo 4:1"
-        ])
-
+        st.markdown("**📍 Informasi Lahan**")
+        luas_lahan = st.number_input("Luas Lahan (ha)", min_value=0.1, max_value=100.0, value=1.0, step=0.1, key=f"luas_{st.session_state.active_scenario}")
+        lokasi = st.selectbox("Lokasi", ["Jawa Barat", "Jawa Tengah", "Jawa Timur", "Sulawesi Selatan", "Sumatera Utara"], key=f"lok_{st.session_state.active_scenario}")
     
     with col2:
-        st.subheader("Target & Harga")
-        target_produksi = st.number_input("Target Produksi (ton/ha)", min_value=1.0, max_value=15.0, value=6.0, step=0.5)
-        harga_jual = st.number_input("Harga Jual Gabah (Rp/kg)", min_value=3000, max_value=10000, value=5500, step=100)
+        st.markdown("**🌾 Varietas & Metode**")
+        varietas = st.selectbox("Varietas Padi", 
+            ["IR64", "Ciherang", "Inpari 32", "Inpari 42", "Inpari 43", "Mekongga", "Memberamo"],
+            key=f"var_{st.session_state.active_scenario}")
+        metode_tanam = st.selectbox("Metode Tanam", [
+            "Transplanting (Pindah Tanam)",
+            "Direct Seeding (Tabela)",
+            "SRI (System of Rice Intensification)",
+            "Jajar Legowo 2:1",
+            "Jajar Legowo 4:1"
+        ], key=f"met_{st.session_state.active_scenario}")
+    
+    with col3:
+        st.markdown("**🎯 Target & Harga**")
+        target_produksi = st.number_input("Target Produksi (ton/ha)", min_value=1.0, max_value=15.0, value=6.0, step=0.5, key=f"prod_{st.session_state.active_scenario}")
+        harga_jual = st.number_input("Harga Jual GKP (Rp/kg)", min_value=3000, max_value=10000, value=5500, step=100, key=f"harga_{st.session_state.active_scenario}")
+        musim_tanam = st.selectbox("Musim Tanam", ["MT I (Okt-Feb)", "MT II (Mar-Jul)", "MT III (Agu-Nov)"], key=f"musim_{st.session_state.active_scenario}")
     
     st.markdown("---")
     
-    # Cost inputs
-    st.subheader(" Rincian Biaya")
-    
-    col_cost1, col_cost2 = st.columns(2)
-    
-    with col_cost1:
-        st.markdown("** Persiapan Lahan & Bibit**")
-        biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=2000000, step=100000)
-        biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=1500000, step=100000)
-        biaya_persemaian = st.number_input("Persemaian (Rp/ha)", value=500000, step=50000)
+    # Cost Input - Simple or Detail mode
+    if input_mode == "Simple":
+        st.markdown(f"### {icon('money')} Rincian Biaya (Mode Simple)")
         
-        st.markdown("** Pupuk**")
-        biaya_urea = st.number_input("Urea (Rp/ha)", value=1200000, step=50000)
-        biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=1500000, step=50000)
-        biaya_sp36 = st.number_input("SP-36 (Rp/ha)", value=600000, step=50000)
-        biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=800000, step=50000)
+        col_cost1, col_cost2 = st.columns(2)
+        
+        with col_cost1:
+            st.markdown("**🌱 Persiapan Lahan & Bibit**")
+            biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=2000000, step=100000, key=f"olah_{st.session_state.active_scenario}")
+            biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=1500000, step=100000, key=f"bibit_{st.session_state.active_scenario}")
+            
+            st.markdown("**🧪 Pupuk**")
+            biaya_urea = st.number_input("Urea (Rp/ha)", value=1200000, step=50000, key=f"urea_{st.session_state.active_scenario}")
+            biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=1500000, step=50000, key=f"npk_{st.session_state.active_scenario}")
+            biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=800000, step=50000, key=f"org_{st.session_state.active_scenario}")
+        
+        with col_cost2:
+            st.markdown("**💊 Pestisida & Herbisida**")
+            biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=1000000, step=50000, key=f"pest_{st.session_state.active_scenario}")
+            biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=500000, step=50000, key=f"herb_{st.session_state.active_scenario}")
+            
+            st.markdown("**👷 Tenaga Kerja**")
+            biaya_tanam = st.number_input("Tanam (Rp/ha)", value=2000000, step=100000, key=f"tanam_{st.session_state.active_scenario}")
+            biaya_pemeliharaan = st.number_input("Pemeliharaan (Rp/ha)", value=1500000, step=100000, key=f"rawat_{st.session_state.active_scenario}")
+            biaya_panen = st.number_input("Panen & Pasca Panen (Rp/ha)", value=3000000, step=100000, key=f"panen_{st.session_state.active_scenario}")
+        
+        # Aggregate costs
+        total_persiapan = biaya_olah_tanah + biaya_bibit
+        total_pupuk = biaya_urea + biaya_npk + biaya_organik
+        total_pestisida = biaya_pestisida + biaya_herbisida
+        total_tenaga_kerja = biaya_tanam + biaya_pemeliharaan + biaya_panen
+        total_lainnya = st.number_input("Biaya Lain-lain (Rp/ha)", value=500000, step=50000, key=f"lain_{st.session_state.active_scenario}")
+        
+    else:  # Detail mode
+        st.markdown(f"### {icon('list')} Rincian Biaya (Mode Detail)")
+        
+        with st.expander("🌱 Persiapan Lahan", expanded=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                biaya_bajak = st.number_input("Bajak (Rp/ha)", value=800000, step=50000, key=f"bajak_{st.session_state.active_scenario}")
+                biaya_garu = st.number_input("Garu (Rp/ha)", value=600000, step=50000, key=f"garu_{st.session_state.active_scenario}")
+            with col2:
+                biaya_ratakan = st.number_input("Ratakan (Rp/ha)", value=400000, step=50000, key=f"rata_{st.session_state.active_scenario}")
+                biaya_buat_pematang = st.number_input("Buat Pematang (Rp/ha)", value=200000, step=50000, key=f"pematang_{st.session_state.active_scenario}")
+            total_persiapan = biaya_bajak + biaya_garu + biaya_ratakan + biaya_buat_pematang
+        
+        with st.expander("🌾 Bibit & Persemaian"):
+            col1, col2 = st.columns(2)
+            with col1:
+                biaya_benih = st.number_input("Benih (Rp/ha)", value=800000, step=50000, key=f"benih_{st.session_state.active_scenario}")
+                biaya_persemaian = st.number_input("Persemaian (Rp/ha)", value=400000, step=50000, key=f"semai_{st.session_state.active_scenario}")
+            with col2:
+                biaya_cabut_bibit = st.number_input("Cabut Bibit (Rp/ha)", value=300000, step=50000, key=f"cabut_{st.session_state.active_scenario}")
+        
+        with st.expander("🧪 Pupuk (Per Aplikasi)"):
+            st.markdown("**Pemupukan Dasar**")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                pupuk_dasar_urea = st.number_input("Urea Dasar (Rp/ha)", value=300000, step=50000, key=f"urea_d_{st.session_state.active_scenario}")
+            with col2:
+                pupuk_dasar_npk = st.number_input("NPK Dasar (Rp/ha)", value=500000, step=50000, key=f"npk_d_{st.session_state.active_scenario}")
+            with col3:
+                pupuk_dasar_organik = st.number_input("Organik Dasar (Rp/ha)", value=800000, step=50000, key=f"org_d_{st.session_state.active_scenario}")
+            
+            st.markdown("**Pemupukan Susulan**")
+            col1, col2 = st.columns(2)
+            with col1:
+                pupuk_susulan1 = st.number_input("Susulan 1 (Rp/ha)", value=400000, step=50000, key=f"sus1_{st.session_state.active_scenario}")
+                pupuk_susulan2 = st.number_input("Susulan 2 (Rp/ha)", value=400000, step=50000, key=f"sus2_{st.session_state.active_scenario}")
+            with col2:
+                pupuk_susulan3 = st.number_input("Susulan 3 (Rp/ha)", value=400000, step=50000, key=f"sus3_{st.session_state.active_scenario}")
+            
+            total_pupuk = pupuk_dasar_urea + pupuk_dasar_npk + pupuk_dasar_organik + pupuk_susulan1 + pupuk_susulan2 + pupuk_susulan3
+        
+        with st.expander("💊 Pestisida & Herbisida"):
+            col1, col2 = st.columns(2)
+            with col1:
+                biaya_insektisida = st.number_input("Insektisida (Rp/ha)", value=600000, step=50000, key=f"insek_{st.session_state.active_scenario}")
+                biaya_fungisida = st.number_input("Fungisida (Rp/ha)", value=400000, step=50000, key=f"fungi_{st.session_state.active_scenario}")
+            with col2:
+                biaya_herbisida_detail = st.number_input("Herbisida (Rp/ha)", value=500000, step=50000, key=f"herb_d_{st.session_state.active_scenario}")
+            total_pestisida = biaya_insektisida + biaya_fungisida + biaya_herbisida_detail
+        
+        with st.expander("👷 Tenaga Kerja"):
+            col1, col2 = st.columns(2)
+            with col1:
+                tk_tanam = st.number_input("Tanam (Rp/ha)", value=2000000, step=100000, key=f"tk_tanam_{st.session_state.active_scenario}")
+                tk_penyiangan = st.number_input("Penyiangan (Rp/ha)", value=800000, step=50000, key=f"tk_siang_{st.session_state.active_scenario}")
+                tk_pemupukan = st.number_input("Pemupukan (Rp/ha)", value=400000, step=50000, key=f"tk_pupuk_{st.session_state.active_scenario}")
+            with col2:
+                tk_penyemprotan = st.number_input("Penyemprotan (Rp/ha)", value=300000, step=50000, key=f"tk_semprot_{st.session_state.active_scenario}")
+                tk_panen = st.number_input("Panen (Rp/ha)", value=2000000, step=100000, key=f"tk_panen_{st.session_state.active_scenario}")
+                tk_pasca_panen = st.number_input("Pasca Panen (Rp/ha)", value=1000000, step=100000, key=f"tk_pasca_{st.session_state.active_scenario}")
+            total_tenaga_kerja = tk_tanam + tk_penyiangan + tk_pemupukan + tk_penyemprotan + tk_panen + tk_pasca_panen
+        
+        with st.expander("💧 Irigasi & Lain-lain"):
+            col1, col2 = st.columns(2)
+            with col1:
+                biaya_irigasi = st.number_input("Irigasi/Air (Rp/ha)", value=500000, step=50000, key=f"irigasi_{st.session_state.active_scenario}")
+                biaya_sewa_alat = st.number_input("Sewa Alat (Rp/ha)", value=300000, step=50000, key=f"alat_{st.session_state.active_scenario}")
+            with col2:
+                biaya_transportasi = st.number_input("Transportasi (Rp/ha)", value=200000, step=50000, key=f"transport_{st.session_state.active_scenario}")
+                biaya_lain_detail = st.number_input("Lain-lain (Rp/ha)", value=200000, step=50000, key=f"lain_d_{st.session_state.active_scenario}")
+            total_lainnya = biaya_irigasi + biaya_sewa_alat + biaya_transportasi + biaya_lain_detail
     
-    with col_cost2:
-        st.markdown("** Pestisida & Herbisida**")
-        biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=1000000, step=50000)
-        biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=500000, step=50000)
-        
-        st.markdown("** Tenaga Kerja**")
-        biaya_tanam = st.number_input("Tanam/Tabela (Rp/ha)", value=2000000, step=100000)
-        biaya_pemeliharaan = st.number_input("Pemeliharaan (Rp/ha)", value=1500000, step=100000)
-        biaya_panen = st.number_input("Panen & Pasca Panen (Rp/ha)", value=3000000, step=100000)
-        
-        st.markdown("** Irigasi & Lain-lain**")
-        biaya_irigasi = st.number_input("Irigasi/Air (Rp/ha)", value=500000, step=50000)
-        biaya_lainnya = st.number_input("Biaya Lain-lain (Rp/ha)", value=500000, step=50000)
-    
-    if st.button(" Hitung RAB", type="primary", use_container_width=True):
-        st.session_state.rab_calculated = True
-        
+    # Calculate button
+    st.markdown("---")
+    if st.button(f"{icon('calculator')} Hitung RAB", type="primary", use_container_width=True):
         # Calculate totals
-        total_persiapan = (biaya_olah_tanah + biaya_bibit + biaya_persemaian) * luas_lahan
-        total_pupuk = (biaya_urea + biaya_npk + biaya_sp36 + biaya_organik) * luas_lahan
-        total_pestisida = (biaya_pestisida + biaya_herbisida) * luas_lahan
-        total_tenaga_kerja = (biaya_tanam + biaya_pemeliharaan + biaya_panen) * luas_lahan
-        total_irigasi = (biaya_irigasi + biaya_lainnya) * luas_lahan
-        
-        total_biaya = total_persiapan + total_pupuk + total_pestisida + total_tenaga_kerja + total_irigasi
+        total_biaya_per_ha = total_persiapan + total_pupuk + total_pestisida + total_tenaga_kerja + total_lainnya
+        total_biaya = total_biaya_per_ha * luas_lahan
         
         # Revenue
-        total_produksi = target_produksi * luas_lahan * 1000  # kg
-        total_pendapatan = total_produksi * harga_jual
+        total_produksi_kg = target_produksi * luas_lahan * 1000
+        total_pendapatan = total_produksi_kg * harga_jual
         
         # Profit
         keuntungan = total_pendapatan - total_biaya
         roi = (keuntungan / total_biaya * 100) if total_biaya > 0 else 0
+        biaya_per_kg = total_biaya / total_produksi_kg if total_produksi_kg > 0 else 0
+        margin_per_kg = keuntungan / total_produksi_kg if total_produksi_kg > 0 else 0
+        
+        # Cash flow projection (4 months cycle)
+        cash_flow = {
+            'Bulan 1': -total_persiapan * luas_lahan - (total_pupuk * 0.4 * luas_lahan),
+            'Bulan 2': -(total_pupuk * 0.3 * luas_lahan) - (total_pestisida * 0.5 * luas_lahan) - (total_tenaga_kerja * 0.3 * luas_lahan),
+            'Bulan 3': -(total_pupuk * 0.3 * luas_lahan) - (total_pestisida * 0.5 * luas_lahan) - (total_tenaga_kerja * 0.3 * luas_lahan),
+            'Bulan 4': -(total_tenaga_kerja * 0.4 * luas_lahan) - total_lainnya * luas_lahan + total_pendapatan
+        }
+        
+        cumulative_cash = []
+        running_total = 0
+        for month, amount in cash_flow.items():
+            running_total += amount
+            cumulative_cash.append(running_total)
         
         # Store in session state
-        st.session_state.rab_data = {
+        st.session_state.scenarios[st.session_state.active_scenario] = {
+            # Basic info
             'luas_lahan': luas_lahan,
+            'lokasi': lokasi,
             'varietas': varietas,
             'metode_tanam': metode_tanam,
             'target_produksi': target_produksi,
             'harga_jual': harga_jual,
-            'total_persiapan': total_persiapan,
-            'total_pupuk': total_pupuk,
-            'total_pestisida': total_pestisida,
-            'total_tenaga_kerja': total_tenaga_kerja,
-            'total_irigasi': total_irigasi,
+            'musim_tanam': musim_tanam,
+            
+            # Costs
+            'total_persiapan': total_persiapan * luas_lahan,
+            'total_pupuk': total_pupuk * luas_lahan,
+            'total_pestisida': total_pestisida * luas_lahan,
+            'total_tenaga_kerja': total_tenaga_kerja * luas_lahan,
+            'total_lainnya': total_lainnya * luas_lahan,
             'total_biaya': total_biaya,
-            'total_produksi': total_produksi,
+            'biaya_per_ha': total_biaya_per_ha,
+            
+            # Revenue & Profit
+            'total_produksi_kg': total_produksi_kg,
             'total_pendapatan': total_pendapatan,
             'keuntungan': keuntungan,
-            'roi': roi
+            'roi': roi,
+            'biaya_per_kg': biaya_per_kg,
+            'margin_per_kg': margin_per_kg,
+            
+            # Cash flow
+            'cash_flow': cash_flow,
+            'cumulative_cash': cumulative_cash,
+            'peak_financing': min(cumulative_cash),
+            
+            # Timestamp
+            'calculated_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         
-        st.success(" RAB berhasil dihitung! Lihat hasil di tab 'Hasil RAB'")
+        st.success(f"✅ RAB untuk {st.session_state.active_scenario} berhasil dihitung!")
+        st.balloons()
 
+# ==================== TAB 2: HASIL RAB ====================
 with tab2:
-    st.header(" Hasil Rencana Anggaran Biaya")
-    
-    if st.session_state.rab_calculated:
-        data = st.session_state.rab_data
-        
-        # Summary cards
-        col_sum1, col_sum2, col_sum3, col_sum4 = st.columns(4)
-        
-        with col_sum1:
-            st.metric("Total Biaya", f"Rp {data['total_biaya']:,.0f}")
-        
-        with col_sum2:
-            st.metric("Total Pendapatan", f"Rp {data['total_pendapatan']:,.0f}")
-        
-        with col_sum3:
-            st.metric("Keuntungan", f"Rp {data['keuntungan']:,.0f}", 
-                     delta=f"{data['roi']:.1f}% ROI")
-        
-        with col_sum4:
-            st.metric("Produksi", f"{data['total_produksi']/1000:.1f} ton")
-        
-        st.markdown("---")
-        
-        # Cost breakdown
-        st.subheader(" Rincian Biaya per Kategori")
-        
-        breakdown_df = pd.DataFrame({
-            'Kategori': ['Persiapan Lahan & Bibit', 'Pupuk', 'Pestisida & Herbisida', 
-                        'Tenaga Kerja', 'Irigasi & Lain-lain'],
-            'Biaya': [data['total_persiapan'], data['total_pupuk'], data['total_pestisida'],
-                     data['total_tenaga_kerja'], data['total_irigasi']],
-            'Persentase': [
-                data['total_persiapan']/data['total_biaya']*100,
-                data['total_pupuk']/data['total_biaya']*100,
-                data['total_pestisida']/data['total_biaya']*100,
-                data['total_tenaga_kerja']/data['total_biaya']*100,
-                data['total_irigasi']/data['total_biaya']*100
-            ]
-        })
-        
-        col_table, col_chart = st.columns([1, 1])
-        
-        with col_table:
-            st.dataframe(breakdown_df.style.format({
-                'Biaya': 'Rp {:,.0f}',
-                'Persentase': '{:.1f}%'
-            }), use_container_width=True, hide_index=True)
-        
-        with col_chart:
-            # Altair pie chart
-            pie_chart = alt.Chart(breakdown_df).mark_arc().encode(
-                theta=alt.Theta(field="Biaya", type="quantitative"),
-                color=alt.Color(field="Kategori", type="nominal", 
-                               scale=alt.Scale(scheme='category10')),
-                tooltip=['Kategori', 'Biaya', 'Persentase']
-            ).properties(
-                title='Distribusi Biaya',
-                height=300
-            )
-            st.altair_chart(pie_chart, use_container_width=True)
-        
-        # Detailed table
-        st.subheader(" Tabel Lengkap RAB")
-        
-        detailed_df = pd.DataFrame({
-            'Item': [
-                'Luas Lahan', 'Varietas', 'Metode Tanam', 'Target Produksi',
-                '', 'BIAYA PRODUKSI', 
-                '1. Persiapan Lahan & Bibit', '2. Pupuk', '3. Pestisida & Herbisida',
-                '4. Tenaga Kerja', '5. Irigasi & Lain-lain', 'TOTAL BIAYA',
-                '', 'PENDAPATAN',
-                'Produksi (kg)', 'Harga Jual (Rp/kg)', 'TOTAL PENDAPATAN',
-                '', 'ANALISIS',
-                'Keuntungan Bersih', 'ROI (%)', 'Biaya per kg', 'Margin per kg'
-            ],
-            'Nilai': [
-                f"{data['luas_lahan']} ha", data['varietas'], data['metode_tanam'], 
-                f"{data['target_produksi']} ton/ha",
-                '', '',
-                f"Rp {data['total_persiapan']:,.0f}",
-                f"Rp {data['total_pupuk']:,.0f}",
-                f"Rp {data['total_pestisida']:,.0f}",
-                f"Rp {data['total_tenaga_kerja']:,.0f}",
-                f"Rp {data['total_irigasi']:,.0f}",
-                f"Rp {data['total_biaya']:,.0f}",
-                '', '',
-                f"{data['total_produksi']:,.0f}",
-                f"Rp {data['harga_jual']:,.0f}",
-                f"Rp {data['total_pendapatan']:,.0f}",
-                '', '',
-                f"Rp {data['keuntungan']:,.0f}",
-                f"{data['roi']:.1f}%",
-                f"Rp {data['total_biaya']/data['total_produksi']:,.0f}",
-                f"Rp {data['keuntungan']/data['total_produksi']:,.0f}"
-            ]
-        })
-        
-        st.dataframe(detailed_df, use_container_width=True, hide_index=True)
-        
-        # Export button
-        if st.button(" Export ke Excel", use_container_width=True):
-            st.info("Feature export akan segera ditambahkan!")
-    
+    if not st.session_state.scenarios:
+        st.info(f"{icon('info')} Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
     else:
-        st.info(" Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
+        data = st.session_state.scenarios.get(st.session_state.active_scenario)
+        
+        if not data:
+            st.warning(f"Data untuk {st.session_state.active_scenario} belum dihitung")
+        else:
+            # Summary metrics
+            st.markdown(f"### {icon('chart-bar')} Ringkasan Keuangan - {st.session_state.active_scenario}")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("Total Biaya", f"Rp {data['total_biaya']:,.0f}", f"Rp {data['biaya_per_ha']:,.0f}/ha")
+            col2.metric("Total Pendapatan", f"Rp {data['total_pendapatan']:,.0f}", f"{data['total_produksi_kg']/1000:.1f} ton")
+            col3.metric("Keuntungan Bersih", f"Rp {data['keuntungan']:,.0f}", 
+                       f"{data['roi']:.1f}% ROI",
+                       delta_color="normal" if data['keuntungan'] > 0 else "inverse")
+            col4.metric("Biaya Produksi", f"Rp {data['biaya_per_kg']:,.0f}/kg", 
+                       f"Margin: Rp {data['margin_per_kg']:,.0f}/kg")
+            
+            st.markdown("---")
+            
+            # Cost breakdown
+            col_chart, col_table = st.columns([1.5, 1])
+            
+            with col_chart:
+                st.markdown(f"### {icon('chart-pie')} Struktur Biaya")
+                
+                breakdown_df = pd.DataFrame({
+                    'Kategori': ['Persiapan Lahan', 'Pupuk', 'Pestisida', 'Tenaga Kerja', 'Lainnya'],
+                    'Biaya': [
+                        data['total_persiapan'],
+                        data['total_pupuk'],
+                        data['total_pestisida'],
+                        data['total_tenaga_kerja'],
+                        data['total_lainnya']
+                    ]
+                })
+                breakdown_df['Persentase'] = (breakdown_df['Biaya'] / data['total_biaya'] * 100).round(1)
+                
+                # Pie chart
+                pie = alt.Chart(breakdown_df).mark_arc(innerRadius=50).encode(
+                    theta=alt.Theta('Biaya:Q'),
+                    color=alt.Color('Kategori:N', scale=alt.Scale(scheme='category10')),
+                    tooltip=['Kategori', alt.Tooltip('Biaya:Q', format=',.0f'), alt.Tooltip('Persentase:Q', format='.1f')]
+                ).properties(height=300)
+                
+                st.altair_chart(pie, use_container_width=True)
+            
+            with col_table:
+                st.markdown(f"### {icon('table')} Detail Biaya")
+                st.dataframe(
+                    breakdown_df.style.format({
+                        'Biaya': 'Rp {:,.0f}',
+                        'Persentase': '{:.1f}%'
+                    }),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            
+            # Cash Flow Projection
+            st.markdown("---")
+            st.markdown(f"### {icon('chart-line')} Proyeksi Arus Kas")
+            
+            cash_flow_df = pd.DataFrame({
+                'Bulan': list(data['cash_flow'].keys()),
+                'Arus Kas': list(data['cash_flow'].values()),
+                'Kumulatif': data['cumulative_cash']
+            })
+            
+            col_cf1, col_cf2 = st.columns([2, 1])
+            
+            with col_cf1:
+                # Cash flow chart
+                base = alt.Chart(cash_flow_df).encode(x='Bulan:O')
+                
+                bars = base.mark_bar().encode(
+                    y='Arus Kas:Q',
+                    color=alt.condition(
+                        alt.datum['Arus Kas'] > 0,
+                        alt.value(COLORS['success']),
+                        alt.value(COLORS['error'])
+                    ),
+                    tooltip=['Bulan', alt.Tooltip('Arus Kas:Q', format=',.0f')]
+                )
+                
+                line = base.mark_line(point=True, color=COLORS['primary']).encode(
+                    y='Kumulatif:Q',
+                    tooltip=['Bulan', alt.Tooltip('Kumulatif:Q', format=',.0f')]
+                )
+                
+                chart = (bars + line).properties(height=300)
+                st.altair_chart(chart, use_container_width=True)
+            
+            with col_cf2:
+                st.markdown("**Analisis Arus Kas:**")
+                st.metric("Kebutuhan Modal Puncak", f"Rp {abs(data['peak_financing']):,.0f}")
+                st.metric("Posisi Kas Akhir", f"Rp {data['cumulative_cash'][-1]:,.0f}")
+                
+                if data['peak_financing'] < 0:
+                    st.warning(f"⚠️ Perlu pembiayaan maksimal Rp {abs(data['peak_financing']):,.0f}")
+                else:
+                    st.success("✅ Tidak perlu pembiayaan eksternal")
 
+# ==================== TAB 3: ANALISIS ====================
 with tab3:
-    st.header(" Analisis Kelayakan")
-    
-    if st.session_state.rab_calculated:
-        data = st.session_state.rab_data
-        
-        # Profitability analysis
-        st.subheader(" Analisis Profitabilitas")
-        
-        if data['roi'] > 50:
-            st.success(f" **Sangat Menguntungkan** - ROI {data['roi']:.1f}% sangat baik untuk budidaya padi")
-        elif data['roi'] > 30:
-            st.success(f" **Menguntungkan** - ROI {data['roi']:.1f}% cukup baik")
-        elif data['roi'] > 10:
-            st.warning(f" **Cukup Menguntungkan** - ROI {data['roi']:.1f}% masih layak namun bisa dioptimalkan")
-        else:
-            st.error(f" **Kurang Menguntungkan** - ROI {data['roi']:.1f}% perlu evaluasi ulang")
-        
-        # Break-even analysis
-        st.subheader(" Break-Even Analysis")
-        
-        biaya_per_kg = data['total_biaya'] / data['total_produksi']
-        break_even_price = biaya_per_kg
-        margin = data['harga_jual'] - biaya_per_kg
-        
-        col_be1, col_be2, col_be3 = st.columns(3)
-        
-        with col_be1:
-            st.metric("Biaya Produksi per kg", f"Rp {biaya_per_kg:,.0f}")
-        
-        with col_be2:
-            st.metric("Harga Break-Even", f"Rp {break_even_price:,.0f}")
-        
-        with col_be3:
-            st.metric("Margin per kg", f"Rp {margin:,.0f}")
-        
-        # Recommendations
-        st.subheader(" Rekomendasi")
-        
-        recommendations = []
-        
-        if data['total_pupuk']/data['total_biaya'] > 0.25:
-            recommendations.append(" Biaya pupuk tinggi (>25%). Pertimbangkan pupuk organik atau beli dalam jumlah besar")
-        
-        if data['total_tenaga_kerja']/data['total_biaya'] > 0.35:
-            recommendations.append(" Biaya tenaga kerja tinggi (>35%). Pertimbangkan mekanisasi atau sistem bagi hasil")
-        
-        if data['roi'] < 30:
-            recommendations.append(" ROI masih rendah. Tingkatkan produktivitas atau cari pasar dengan harga lebih baik")
-        
-        if biaya_per_kg > 4000:
-            recommendations.append(" Biaya produksi per kg tinggi. Lakukan efisiensi di semua aspek")
-        
-        if recommendations:
-            for rec in recommendations:
-                st.info(rec)
-        else:
-            st.success(" Rencana budidaya Anda sudah optimal!")
-    
+    if len(st.session_state.scenarios) < 1:
+        st.info(f"{icon('info')} Buat minimal 1 skenario untuk melihat analisis")
     else:
-        st.info(" Silakan input data dan hitung RAB di tab 'Input Data' terlebih dahulu")
+        st.markdown(f"### {icon('chart-line')} Analisis Komparatif")
+        
+        # Scenario comparison
+        if len(st.session_state.scenarios) >= 2:
+            st.markdown("#### Perbandingan Skenario")
+            
+            # Create comparison dataframe
+            comparison_data = []
+            for name, scenario in st.session_state.scenarios.items():
+                comparison_data.append({
+                    'Skenario': name,
+                    'Varietas': scenario['varietas'],
+                    'Luas (ha)': scenario['luas_lahan'],
+                    'Biaya Total': scenario['total_biaya'],
+                    'Pendapatan': scenario['total_pendapatan'],
+                    'Keuntungan': scenario['keuntungan'],
+                    'ROI (%)': scenario['roi'],
+                    'Biaya/kg': scenario['biaya_per_kg']
+                })
+            
+            comp_df = pd.DataFrame(comparison_data)
+            
+            # Display comparison table
+            st.dataframe(
+                comp_df.style.format({
+                    'Luas (ha)': '{:.1f}',
+                    'Biaya Total': 'Rp {:,.0f}',
+                    'Pendapatan': 'Rp {:,.0f}',
+                    'Keuntungan': 'Rp {:,.0f}',
+                    'ROI (%)': '{:.1f}',
+                    'Biaya/kg': 'Rp {:,.0f}'
+                }).background_gradient(subset=['ROI (%)'], cmap='RdYlGn'),
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            # Comparison charts
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # ROI comparison
+                roi_chart = alt.Chart(comp_df).mark_bar().encode(
+                    x=alt.X('Skenario:N', title=''),
+                    y=alt.Y('ROI (%):Q', title='ROI (%)'),
+                    color=alt.Color('ROI (%):Q', scale=alt.Scale(scheme='redyellowgreen')),
+                    tooltip=['Skenario', alt.Tooltip('ROI (%):Q', format='.1f')]
+                ).properties(title='Perbandingan ROI', height=300)
+                st.altair_chart(roi_chart, use_container_width=True)
+            
+            with col2:
+                # Cost comparison
+                cost_chart = alt.Chart(comp_df).mark_bar().encode(
+                    x=alt.X('Skenario:N', title=''),
+                    y=alt.Y('Biaya/kg:Q', title='Biaya per kg (Rp)'),
+                    color=alt.value(COLORS['primary']),
+                    tooltip=['Skenario', alt.Tooltip('Biaya/kg:Q', format=',.0f')]
+                ).properties(title='Perbandingan Biaya Produksi', height=300)
+                st.altair_chart(cost_chart, use_container_width=True)
+            
+            # Best scenario recommendation
+            st.markdown("---")
+            st.markdown("#### 🏆 Rekomendasi")
+            
+            best_roi = comp_df.loc[comp_df['ROI (%)'].idxmax()]
+            lowest_cost = comp_df.loc[comp_df['Biaya/kg'].idxmin()]
+            highest_profit = comp_df.loc[comp_df['Keuntungan'].idxmax()]
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.success(f"**ROI Tertinggi**\n\n{best_roi['Skenario']}\n\n{best_roi['ROI (%)']:.1f}%")
+            with col2:
+                st.success(f"**Biaya Terendah**\n\n{lowest_cost['Skenario']}\n\nRp {lowest_cost['Biaya/kg']:,.0f}/kg")
+            with col3:
+                st.success(f"**Keuntungan Terbesar**\n\n{highest_profit['Skenario']}\n\nRp {highest_profit['Keuntungan']:,.0f}")
+        
+        else:
+            st.info("Buat minimal 2 skenario untuk perbandingan")
+        
+        # Sensitivity Analysis (for active scenario)
+        if st.session_state.active_scenario in st.session_state.scenarios:
+            st.markdown("---")
+            st.markdown(f"#### {icon('sliders')} Analisis Sensitivitas - {st.session_state.active_scenario}")
+            
+            data = st.session_state.scenarios[st.session_state.active_scenario]
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Sensitivitas Harga Jual**")
+                price_range = np.linspace(data['harga_jual'] * 0.7, data['harga_jual'] * 1.3, 7)
+                profit_by_price = []
+                
+                for price in price_range:
+                    new_revenue = data['total_produksi_kg'] * price
+                    new_profit = new_revenue - data['total_biaya']
+                    profit_by_price.append(new_profit)
+                
+                price_df = pd.DataFrame({
+                    'Harga (Rp/kg)': price_range,
+                    'Keuntungan': profit_by_price
+                })
+                
+                price_chart = alt.Chart(price_df).mark_line(point=True, color=COLORS['primary']).encode(
+                    x=alt.X('Harga (Rp/kg):Q', title='Harga Jual (Rp/kg)'),
+                    y=alt.Y('Keuntungan:Q', title='Keuntungan (Rp)'),
+                    tooltip=[alt.Tooltip('Harga (Rp/kg):Q', format=',.0f'), alt.Tooltip('Keuntungan:Q', format=',.0f')]
+                ).properties(height=250)
+                st.altair_chart(price_chart, use_container_width=True)
+            
+            with col2:
+                st.markdown("**Sensitivitas Produktivitas**")
+                prod_range = np.linspace(data['target_produksi'] * 0.7, data['target_produksi'] * 1.3, 7)
+                profit_by_prod = []
+                
+                for prod in prod_range:
+                    new_prod_kg = prod * data['luas_lahan'] * 1000
+                    new_revenue = new_prod_kg * data['harga_jual']
+                    new_profit = new_revenue - data['total_biaya']
+                    profit_by_prod.append(new_profit)
+                
+                prod_df = pd.DataFrame({
+                    'Produktivitas (ton/ha)': prod_range,
+                    'Keuntungan': profit_by_prod
+                })
+                
+                prod_chart = alt.Chart(prod_df).mark_line(point=True, color=COLORS['success']).encode(
+                    x=alt.X('Produktivitas (ton/ha):Q', title='Produktivitas (ton/ha)'),
+                    y=alt.Y('Keuntungan:Q', title='Keuntungan (Rp)'),
+                    tooltip=[alt.Tooltip('Produktivitas (ton/ha):Q', format='.1f'), alt.Tooltip('Keuntungan:Q', format=',.0f')]
+                ).properties(height=250)
+                st.altair_chart(prod_chart, use_container_width=True)
+
+# ==================== TAB 4: EXPORT ====================
+with tab4:
+    st.markdown(f"### {icon('download')} Export & Laporan")
+    
+    if not st.session_state.scenarios:
+        st.info("Belum ada data untuk di-export")
+    else:
+        # Select scenarios to export
+        export_scenarios = st.multiselect(
+            "Pilih Skenario untuk Export",
+            list(st.session_state.scenarios.keys()),
+            default=list(st.session_state.scenarios.keys())
+        )
+        
+        if export_scenarios:
+            # Create export dataframe
+            export_data = []
+            for name in export_scenarios:
+                scenario = st.session_state.scenarios[name]
+                export_data.append({
+                    'Skenario': name,
+                    'Lokasi': scenario['lokasi'],
+                    'Varietas': scenario['varietas'],
+                    'Metode Tanam': scenario['metode_tanam'],
+                    'Luas Lahan (ha)': scenario['luas_lahan'],
+                    'Target Produksi (ton/ha)': scenario['target_produksi'],
+                    'Harga Jual (Rp/kg)': scenario['harga_jual'],
+                    'Total Biaya (Rp)': scenario['total_biaya'],
+                    'Total Pendapatan (Rp)': scenario['total_pendapatan'],
+                    'Keuntungan (Rp)': scenario['keuntungan'],
+                    'ROI (%)': scenario['roi'],
+                    'Biaya per kg (Rp)': scenario['biaya_per_kg'],
+                    'Margin per kg (Rp)': scenario['margin_per_kg']
+                })
+            
+            export_df = pd.DataFrame(export_data)
+            
+            # Preview
+            st.markdown("#### Preview Data Export")
+            st.dataframe(export_df, use_container_width=True, hide_index=True)
+            
+            # Export buttons
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                csv = export_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label=f"{icon('file')} Download CSV",
+                    data=csv,
+                    file_name=f"RAB_Padi_{datetime.now().strftime('%Y%m%d')}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            
+            with col2:
+                # Excel export (requires openpyxl)
+                try:
+                    from io import BytesIO
+                    buffer = BytesIO()
+                    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                        export_df.to_excel(writer, sheet_name='RAB Summary', index=False)
+                    
+                    st.download_button(
+                        label=f"{icon('file')} Download Excel",
+                        data=buffer.getvalue(),
+                        file_name=f"RAB_Padi_{datetime.now().strftime('%Y%m%d')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True
+                    )
+                except ImportError:
+                    st.info("Install openpyxl untuk export Excel")
+            
+            with col3:
+                st.button(f"{icon('print')} Print Preview", use_container_width=True, disabled=True)
+                st.caption("Coming soon")
 
 # Footer
 st.markdown("---")
-st.caption(" **Tips:** Selalu update harga sesuai kondisi pasar terkini untuk hasil RAB yang akurat")
+st.caption(f"{icon('info')} **Tips:** Gunakan mode Detail untuk breakdown biaya yang lebih akurat. Bandingkan beberapa skenario untuk keputusan terbaik.")
