@@ -5,14 +5,33 @@ Sistem Manajemen Budidaya Padi Terpadu dengan AI & Machine Learning
 ## Features
 
 ### Comprehensive Modules (14+)
-- **Perencanaan & Keuangan**: RAB Calculator, Business Analysis, ROI Calculator
+- **Perencanaan & Keuangan**: 
+  - **RAB Calculator Advanced** (NEW Phase 2): Multi-scenario comparison, template management, cost structure analysis, benchmark comparison, sensitivity analysis, cash flow projection
+  - Business Analysis, ROI Calculator
 - **Budidaya & Teknis**: Cultivation Guide, Rice Varieties, SOP, Fertilizer Calculator
 - **Hama & Penyakit**: Pest Database, Spraying Strategy, AI Disease Detection
 - **Monitoring**: Growth Monitoring, Weather Monitoring, Planting Calendar
 - **AI & ML**: PyCaret ML Lab, AI Recommendations, Analytics Hub
 - **Visualisasi**: Altair Visualizations, Statistical Analysis, Dashboard
 
+### RAB Calculator - Advanced Features
+**Phase 1 (Implemented)**
+- ✅ Multi-Scenario Comparison - Compare up to 4 different cultivation scenarios
+- ✅ Detailed Cost Breakdown - Simple & Detail input modes with granular cost tracking
+- ✅ Cash Flow Projection - Monthly cash flow analysis with peak financing requirements
+- ✅ Sensitivity Analysis - Interactive analysis of price and productivity impacts
+- ✅ Enhanced Visualizations - Interactive charts with Altair
+- ✅ Export Functionality - CSV/Excel download capabilities
+
+**Phase 2 (Implemented)**
+- ✅ Template Management - 5 pre-defined templates (Konvensional, Organik, SRI, Jajar Legowo, Low Input)
+- ✅ Cost Structure Analysis - Fixed vs Variable cost classification, efficiency metrics
+- ✅ Benchmark Comparison - Regional benchmark data with efficiency scoring
+- ✅ Marginal Analysis - Contribution margin and productivity metrics
+- ✅ Performance Scoring - Multi-dimensional efficiency evaluation
+
 ### Key Highlights
+- **Advanced RAB Calculator**: Professional budget planning with scenario comparison, templates, and benchmarking
 - **PyCaret Integration**: Automated ML for yield prediction and classification
 - **Altair Visualizations**: Interactive, declarative charts
 - **Rice-Specific**: 20+ Indonesian rice varieties, pest database, water management
