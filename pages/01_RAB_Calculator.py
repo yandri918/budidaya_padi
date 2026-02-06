@@ -80,7 +80,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 # ==================== TAB 1: INPUT DATA ====================
 with tab1:
-    st.markdown(f"### {icon('seedling')} Skenario: {st.session_state.active_scenario}")
+    st.markdown(f"<h3>{icon('seedling')} Skenario: {st.session_state.active_scenario}</h3>", unsafe_allow_html=True)
     
     # Basic Information
     col1, col2, col3 = st.columns(3)
@@ -113,7 +113,7 @@ with tab1:
     
     # Cost Input - Simple or Detail mode
     if input_mode == "Simple":
-        st.markdown(f"### {icon('money')} Rincian Biaya (Mode Simple)")
+        st.markdown(f"<h3>{icon('money')} Rincian Biaya (Mode Simple)</h3>", unsafe_allow_html=True)
         
         col_cost1, col_cost2 = st.columns(2)
         
@@ -145,7 +145,7 @@ with tab1:
         total_lainnya = st.number_input("Biaya Lain-lain (Rp/ha)", value=500000, step=50000, key=f"lain_{st.session_state.active_scenario}")
         
     else:  # Detail mode
-        st.markdown(f"### {icon('list')} Rincian Biaya (Mode Detail)")
+        st.markdown(f"<h3>{icon('list')} Rincian Biaya (Mode Detail)</h3>", unsafe_allow_html=True)
         
         with st.expander("🌱 Persiapan Lahan", expanded=True):
             col1, col2 = st.columns(2)
@@ -298,7 +298,7 @@ with tab2:
             st.warning(f"Data untuk {st.session_state.active_scenario} belum dihitung")
         else:
             # Summary metrics
-            st.markdown(f"### {icon('chart-bar')} Ringkasan Keuangan - {st.session_state.active_scenario}")
+            st.markdown(f"<h3>{icon('chart-bar')} Ringkasan Keuangan - {st.session_state.active_scenario}</h3>", unsafe_allow_html=True)
             
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("Total Biaya", f"Rp {data['total_biaya']:,.0f}", f"Rp {data['biaya_per_ha']:,.0f}/ha")
@@ -315,7 +315,7 @@ with tab2:
             col_chart, col_table = st.columns([1.5, 1])
             
             with col_chart:
-                st.markdown(f"### {icon('chart-pie')} Struktur Biaya")
+                st.markdown(f"<h3>{icon('chart-pie')} Struktur Biaya</h3>", unsafe_allow_html=True)
                 
                 breakdown_df = pd.DataFrame({
                     'Kategori': ['Persiapan Lahan', 'Pupuk', 'Pestisida', 'Tenaga Kerja', 'Lainnya'],
@@ -339,7 +339,7 @@ with tab2:
                 st.altair_chart(pie, use_container_width=True)
             
             with col_table:
-                st.markdown(f"### {icon('table')} Detail Biaya")
+                st.markdown(f"<h3>{icon('table')} Detail Biaya</h3>", unsafe_allow_html=True)
                 st.dataframe(
                     breakdown_df.style.format({
                         'Biaya': 'Rp {:,.0f}',
@@ -351,7 +351,7 @@ with tab2:
             
             # Cash Flow Projection
             st.markdown("---")
-            st.markdown(f"### {icon('chart-line')} Proyeksi Arus Kas")
+            st.markdown(f"<h3>{icon('chart-line')} Proyeksi Arus Kas</h3>", unsafe_allow_html=True)
             
             cash_flow_df = pd.DataFrame({
                 'Bulan': list(data['cash_flow'].keys()),
@@ -398,7 +398,7 @@ with tab3:
     if len(st.session_state.scenarios) < 1:
         st.info(f"{icon('info')} Buat minimal 1 skenario untuk melihat analisis")
     else:
-        st.markdown(f"### {icon('chart-line')} Analisis Komparatif")
+        st.markdown(f"<h3>{icon('chart-line')} Analisis Komparatif</h3>", unsafe_allow_html=True)
         
         # Scenario comparison
         if len(st.session_state.scenarios) >= 2:
@@ -479,7 +479,7 @@ with tab3:
         # Sensitivity Analysis (for active scenario)
         if st.session_state.active_scenario in st.session_state.scenarios:
             st.markdown("---")
-            st.markdown(f"#### {icon('sliders')} Analisis Sensitivitas - {st.session_state.active_scenario}")
+            st.markdown(f"<h4>{icon('sliders')} Analisis Sensitivitas - {st.session_state.active_scenario}</h4>", unsafe_allow_html=True)
             
             data = st.session_state.scenarios[st.session_state.active_scenario]
             
@@ -532,7 +532,7 @@ with tab3:
 
 # ==================== TAB 4: EXPORT ====================
 with tab4:
-    st.markdown(f"### {icon('download')} Export & Laporan")
+    st.markdown(f"<h3>{icon('download')} Export & Laporan</h3>", unsafe_allow_html=True)
     
     if not st.session_state.scenarios:
         st.info("Belum ada data untuk di-export")
