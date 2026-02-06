@@ -236,58 +236,41 @@ with tab1:
     if input_mode == "Simple":
         st.markdown(f"<h3>{icon('money')} Rincian Biaya (Mode Simple)</h3>", unsafe_allow_html=True)
         
-        # Mapping helpers for cost structure
-        costs = loaded_tpl.get('costs_per_ha', {}) if loaded_tpl else {}
-        
         col_cost1, col_cost2 = st.columns(2)
+        
+        # Helper shortcut for current scenario key suffix
+        k_suffix = st.session_state.active_scenario
         
         with col_cost1:
             st.markdown("**🌱 Persiapan Lahan & Bibit**")
-            # Map cost fields
-            def get_cost(key, default):
-                if existing_data: return existing_data.get(key, default) # Use existing calculation keys if available? No, simple mode keys are specific widget keys
-                # Wait, existing_data stores TOTALS like 'total_persiapan', not individual widget keys usually
-                # But let's check saving logic... saving logic stores granular keys?
-                # Actually saving logic stores totals. But widget state should persist?
-                # Re-using get_val logic with template mapping:
-                if loaded_tpl:
-                    if key == 'olah': return costs.get('persiapan_lahan', 2000000)
-                    if key == 'bibit': return costs.get('bibit', 1500000)
-                    if key == 'urea': return costs.get('pupuk_subsidi', 2000000) * 0.4 # Est
-                    if key == 'npk': return costs.get('pupuk_subsidi', 2000000) * 0.6 # Est
-                    if key == 'org': return costs.get('pupuk_organik', 800000)
-                    if key == 'pest': return costs.get('pestisida', 1000000)
-                    if key == 'herb': return 500000 # Default
-                    if key == 'tanam': return costs.get('tenaga_kerja', 4000000) * 0.3 # Est
-                    if key == 'rawat': return costs.get('tenaga_kerja', 4000000) * 0.3 # Est
-                    if key == 'panen': return costs.get('panen_pasca', 3000000)
-                    if key == 'sewa': return costs.get('lainnya', 500000)
-                return default
-
-            biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=int(get_cost('olah', 2000000)), step=100000, key=f"olah_{st.session_state.active_scenario}")
-            biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=int(get_cost('bibit', 1500000)), step=100000, key=f"bibit_{st.session_state.active_scenario}")
+            biaya_olah_tanah = st.number_input("Olah Tanah (Rp/ha)", value=int(get_val(f'olah_{k_suffix}', 2000000)), step=100000, key=f"olah_{k_suffix}")
+            biaya_bibit = st.number_input("Bibit/Benih (Rp/ha)", value=int(get_val(f'bibit_{k_suffix}', 1500000)), step=100000, key=f"bibit_{k_suffix}")
             
             st.markdown("**🧪 Pupuk**")
-            biaya_urea = st.number_input("Urea (Rp/ha)", value=int(get_cost('urea', 1200000)), step=50000, key=f"urea_{st.session_state.active_scenario}")
-            biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=int(get_cost('npk', 1500000)), step=50000, key=f"npk_{st.session_state.active_scenario}")
-            biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=int(get_cost('org', 800000)), step=50000, key=f"org_{st.session_state.active_scenario}")
+            biaya_urea = st.number_input("Urea (Rp/ha)", value=int(get_val(f'urea_{k_suffix}', 1200000)), step=50000, key=f"urea_{k_suffix}")
+            biaya_npk = st.number_input("NPK/Phonska (Rp/ha)", value=int(get_val(f'npk_{k_suffix}', 1500000)), step=50000, key=f"npk_{k_suffix}")
+            biaya_organik = st.number_input("Pupuk Organik (Rp/ha)", value=int(get_val(f'org_{k_suffix}', 800000)), step=50000, key=f"org_{k_suffix}")
         
         with col_cost2:
             st.markdown("**💊 Pestisida & Herbisida**")
-            biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=int(get_cost('pest', 1000000)), step=50000, key=f"pest_{st.session_state.active_scenario}")
-            biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=int(get_cost('herb', 500000)), step=50000, key=f"herb_{st.session_state.active_scenario}")
+            biaya_pestisida = st.number_input("Pestisida (Rp/ha)", value=int(get_val(f'pest_{k_suffix}', 1000000)), step=50000, key=f"pest_{k_suffix}")
+            biaya_herbisida = st.number_input("Herbisida (Rp/ha)", value=int(get_val(f'herb_{k_suffix}', 500000)), step=50000, key=f"herb_{k_suffix}")
             
             st.markdown("**👷 Tenaga Kerja**")
-            biaya_tanam = st.number_input("Tanam (Rp/ha)", value=2000000, step=100000, key=f"tanam_{st.session_state.active_scenario}")
-            biaya_pemeliharaan = st.number_input("Pemeliharaan (Rp/ha)", value=1500000, step=100000, key=f"rawat_{st.session_state.active_scenario}")
-            biaya_panen = st.number_input("Panen & Pasca Panen (Rp/ha)", value=3000000, step=100000, key=f"panen_{st.session_state.active_scenario}")
+            biaya_tanam = st.number_input("Tanam (Rp/ha)", value=int(get_val(f'tanam_{k_suffix}', 2000000)), step=100000, key=f"tanam_{k_suffix}")
+            biaya_rawat = st.number_input("Perawatan (Rp/ha)", value=int(get_val(f'rawat_{k_suffix}', 1500000)), step=100000, key=f"rawat_{k_suffix}")
+            biaya_panen = st.number_input("Panen (Rp/ha)", value=int(get_val(f'panen_{k_suffix}', 3000000)), step=100000, key=f"panen_{k_suffix}")
+            
+            st.markdown("**💧 Irigasi & Lainnya**")
+            biaya_sewa = st.number_input("Irigasi/Sewa Pompa (Rp/ha)", value=int(get_val(f'sewa_{k_suffix}', 500000)), step=50000, key=f"sewa_{k_suffix}")
+            biaya_lain = st.number_input("Lain-lain (Rp/ha)", value=int(get_val(f'lain_{k_suffix}', 500000)), step=50000, key=f"lain_{k_suffix}")
         
         # Aggregate costs
         total_persiapan = biaya_olah_tanah + biaya_bibit
         total_pupuk = biaya_urea + biaya_npk + biaya_organik
         total_pestisida = biaya_pestisida + biaya_herbisida
-        total_tenaga_kerja = biaya_tanam + biaya_pemeliharaan + biaya_panen
-        total_lainnya = st.number_input("Biaya Lain-lain (Rp/ha)", value=500000, step=50000, key=f"lain_{st.session_state.active_scenario}")
+        total_tenaga_kerja = biaya_tanam + biaya_rawat + biaya_panen
+        total_lainnya = biaya_sewa + biaya_lain
         
     else:  # Detail mode
         st.markdown(f"<h3>{icon('list')} Rincian Biaya (Mode Detail)</h3>", unsafe_allow_html=True)
