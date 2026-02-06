@@ -50,15 +50,34 @@ with st.sidebar:
     st.markdown(f"<h3>{icon('folder')} Manajemen Skenario</h3>", unsafe_allow_html=True)
     
     # Scenario selector
-    scenario_names = list(st.session_state.scenarios.keys()) if st.session_state.scenarios else ["Skenario 1"]
-    selected_scenario = st.selectbox("Pilih Skenario", scenario_names, key="scenario_selector")
+    # Include all existing scenarios plus the active one (in case it's new)
+    all_scenario_names = list(st.session_state.scenarios.keys())
+    if st.session_state.active_scenario not in all_scenario_names:
+        all_scenario_names.append(st.session_state.active_scenario)
+    if not all_scenario_names:
+        all_scenario_names = ["Skenario 1"]
+    
+    selected_scenario = st.selectbox("Pilih Skenario", all_scenario_names, 
+                                     index=all_scenario_names.index(st.session_state.active_scenario) if st.session_state.active_scenario in all_scenario_names else 0,
+                                     key="scenario_selector")
     st.session_state.active_scenario = selected_scenario
     
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
         if st.button("➕ Baru", use_container_width=True):
-            new_num = len(st.session_state.scenarios) + 1
-            st.session_state.active_scenario = f"Skenario {new_num}"
+            # Find next available scenario number
+            existing_nums = []
+            for name in st.session_state.scenarios.keys():
+                if name.startswith("Skenario "):
+                    try:
+                        num = int(name.split(" ")[1])
+                        existing_nums.append(num)
+                    except:
+                        pass
+            new_num = max(existing_nums) + 1 if existing_nums else 1
+            new_scenario_name = f"Skenario {new_num}"
+            st.session_state.active_scenario = new_scenario_name
+            # Note: Actual scenario data will be created when user clicks "Hitung RAB"
             st.rerun()
     
     with col_btn2:
